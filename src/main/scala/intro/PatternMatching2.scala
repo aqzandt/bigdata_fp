@@ -66,6 +66,7 @@ object PatternMatching2 {
      * 		List("?gniod","ouy","era","woh",",ouy","yeH")
      */
     def drunkWords(xs: List[String]) : List[String] = {
+      //Is ::: allowed?
       xs match {
         case Nil => Nil
         case s :: tail => drunkWords(tail) ::: s.reverse :: Nil
@@ -85,7 +86,12 @@ object PatternMatching2 {
      * NB! Note that we don't provide a test case for this exercise.
      * You are encouraged to write your own tests
      */
-    def myForAll[A](xs : List[A], f: A => Boolean) : Boolean = ???
+    def myForAll[A](xs : List[A], f: A => Boolean) : Boolean = {
+      (xs, f) match {
+        case (Nil, _) => true
+        case ((i : A) :: tail, a) => a(i) && myForAll(tail, a)
+      }
+    }
 
 
     /** Q8 (3p)
@@ -100,7 +106,12 @@ object PatternMatching2 {
      * 	lastElem(List()) // None
      * 	lastElem(List.range(0,3)) // Some(2) (range has exclusive ceiling)
      */
-    def lastElem[A](xs : List[A]) : Option[A] = ???
+    def lastElem[A](xs : List[A]) : Option[A] = {
+      xs match {
+        case Nil => None
+        case i :: tail => if (tail == Nil) Some(i: A) else lastElem(tail)
+      }
+    }
 
     /** Q9 (4p)
      * Take two lists and concatenate them, returning the result
@@ -112,6 +123,13 @@ object PatternMatching2 {
      * 		append(List(), List()) 			// List()
      * 		append(List(1,3,5), List(2,4)) 	// List(1,3,5,2,4)
      */
-    def append[A](xs: List[A], ys: List[A]) : List[A] = ???
+    def append[A](xs: List[A], ys: List[A]) : List[A] = {
+      xs ::: ys
+//      Is xs ::: ys allowed? (Triple colon)
+//      ys match {
+//        case Nil => xs
+//        case y :: yTail => append(xs ::: y :: Nil, yTail)
+//      }
+    }
 
 }
