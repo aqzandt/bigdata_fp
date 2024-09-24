@@ -47,7 +47,12 @@ object PatternMatching2 {
      *
      * Example: twice(List.range(0,4)) // List(0, 0, 1, 1, 2, 2, 3, 3) 
      */
-    def twice[A](xs : List[A]) : List[A] = ???
+    def twice[A](xs : List[A]) : List[A] = {
+      xs match {
+        case Nil => Nil
+        case e :: tail => e :: e :: twice(tail)
+      }
+    }
 
     /** Q6 (2p)
      * You had a few drinks too much after a party and recorded a message for  
@@ -60,7 +65,12 @@ object PatternMatching2 {
      * turns into 
      * 		List("?gniod","ouy","era","woh",",ouy","yeH")
      */
-    def drunkWords(xs: List[String]) : List[String] = ???
+    def drunkWords(xs: List[String]) : List[String] = {
+      xs match {
+        case Nil => Nil
+        case s :: tail => drunkWords(tail) ::: s.reverse :: Nil
+      }
+    }
 
 
     /** Q7 (3p)

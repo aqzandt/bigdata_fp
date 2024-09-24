@@ -34,7 +34,19 @@ object Functions {
    *           - "FizzBuzz" if the given number is divisible by both 3 and 5
    *           - Otherwise return the string representation of the number, e.g. "2"
    */
+  def fizzBuzz(i: Int): String = {
 
+    if (i % 3 == 0 && i % 3 == 5) {
+      return "FizzBuzz"
+    }
+    if (i % 3 == 0) {
+      return "Fizz"
+    }
+    if (i % 5 == 0) {
+      return "Buzz"
+    }
+    i.toString
+  }
 
   /**
    * Scala supports both `val`/`var` variables (There is actually one more type,
@@ -95,33 +107,30 @@ object Functions {
    */
 
   // TODO: replace the ??? with lambda expressions (anonymous functions)
-  val isEven = (i: Int) => ??? // tells whether given Int is even or not
-  val isOdd = (i: Int) => ??? // same but this time if it's odd
-  val timesTwo = (i: Int) => ??? // takes an Int and doubles it
+  val isEven = (i: Int) => if (i % 2 == 0) true else false // tells whether given Int is even or not
+  val isOdd = (i: Int) => if (i % 2 == 1) true else false // same but this time if it's odd
+  val timesTwo = (i: Int) => i * 2 // takes an Int and doubles it
 
-  def hofs(): List[List[Int]] = ???
-  // TODO change this method below:
-  //
-  //	{
-  //		// TODO:
-  //		// - Look up the List functions used in the Scala API
-  //		// - change the parameter type of f in both HOFS below
-  //		//   from ...... to the correct type
-  // - then uncomment this block and remove the `???`
-  //		def myFirstHOF(xs: List[Int], f: ...... ) : List[Int] =
-  //			xs.filter(f)
-  //		def mySecondHOF(xs: List[Int], f: ...... ) : List[Int] =
-  //			xs.map(f)
-  //
-  //		val first = myFirstHOF(List(1,2,3,4), isEven)
-  //		val second = myFirstHOF(List(1,2,3,4), isOdd)
-  //		val third = mySecondHOF(List(10,11,12,13,14,15), timesTwo)
-  //
-  //		val finalResult = List(first, second, third)
-  //		finalResult
-  //		// Scala returns the final expression, but if you just assigned it to
-  //		// a variable the return type is Unit
-  //	}
+  def hofs(): List[List[Int]] = {
+  		// TODO:
+  		// - Look up the List functions used in the Scala API
+  		// - change the parameter type of f in both HOFS below
+  		//   from ...... to the correct type
+      // - then uncomment this block and remove the `???`
+  		def myFirstHOF(xs: List[Int], f: (Int) => Boolean) : List[Int] =
+  			xs.filter(f)
+  		def mySecondHOF(xs: List[Int], f: (Int) => Int) : List[Int] =
+  			xs.map(f)
+
+  		val first = myFirstHOF(List(1,2,3,4), isEven)
+  		val second = myFirstHOF(List(1,2,3,4), isOdd)
+  		val third = mySecondHOF(List(10,11,12,13,14,15), timesTwo)
+
+  		val finalResult = List(first, second, third)
+  		finalResult
+  		// Scala returns the final expression, but if you just assigned it to
+  		// a variable the return type is Unit
+  	}
 
   /* Note 1
    * running println(hofs()) results in
