@@ -11,4 +11,18 @@ class ListsTest extends FunSuite {
             customAverage(List(4, 1, 3, 2, 6, 2, 8, 2, 1, 4), 2, 5)
         }
     }
+
+    test("fewerN") {
+        assertResult(5) {
+            // 4 + 3 + 6 + 8 + 4 = 25, 25/5 = 5
+            customAverage(List(4, 1, 5, 2, 6, 2, 8, 2, 1, 4), 2, 3)
+        }
+    }
+
+    test("moreN") {
+        assertResult(5) {
+            // 4 + 3 + 6 + 8 + 4 = 25, 25/5 = 5
+            customAverage(List(4, 1, 3, 2, 6, 2, 8, 2, 1, 4), 2, 8)
+        }
+    }
 }

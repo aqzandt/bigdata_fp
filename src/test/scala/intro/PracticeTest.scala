@@ -17,6 +17,24 @@ class PracticeTest extends FunSuite {
         }
     }
 
+    test("MaxValue2") {
+        assertResult(-1) {
+            maxValue(List(-3, -8, -5, -1))
+        }
+    }
+
+    test("MaxValue3") {
+        assertResult(Int.MinValue) {
+            maxValue(List())
+        }
+    }
+
+    test("MaxValueLong") {
+        assertResult(23) {
+            maxValue(List(10, 4, 14, -4, 15, 14, 16, 7,10, 4, 14, -4, 15, 14, 16, 7,10, 4, 14, -4, 15, 14, 16, 7,10, 4, 14, -4, 15, 14, 16, 7,10, 4, 14, -4, 15, 14, 16, 7,10, 4, 14, -4, 15, 14, 16, 7,23))
+        }
+    }
+
     test("intList") {
         assertResult(List(5,6,7)) {
             intList(5,7)

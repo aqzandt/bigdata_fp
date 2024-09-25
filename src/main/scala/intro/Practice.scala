@@ -19,9 +19,9 @@ object Practice {
       * @return the first n items of xs.
       */
     def firstN(xs: List[Int], n: Int): List[Int] = {
-        xs match {
-            case Nil => Nil
-            case i :: tail => i :: firstN(tail, n-1)
+        (xs, n) match {
+            case (Nil,_) => Nil
+            case (i :: tail,n) => if (n > 0) i :: firstN(tail, n-1) else Nil
         }
     }
 
@@ -33,11 +33,12 @@ object Practice {
       * @param xs list to process.
       * @return the maximum value in the list.
       */
-    def maxValue(xs: List[Int]): Int = {
+    def maxValue(xs: List[Int]): Int =
+    {
         xs match {
             case Nil => Int.MinValue
-            case i :: tail =>
-                if (i < maxValue(tail)) maxValue(tail) else i
+            case i :: tail => val mV = maxValue(tail)
+                if (i < mV) mV else i
         }
     }
 
@@ -48,9 +49,9 @@ object Practice {
      * intList(2,7) // List(2,3,4,5,6,7)
      * intList(3,0) // List()
      */
-    def intList(a: Int, b: Int) : List[Int] = {
-        if (a > b) List()
-        else a :: intList(a + 1, b)
+    def intList(a: Int, b: Int) : List[Int] =
+    {
+        if (a > b) Nil else a :: intList(a + 1, b)
     }
 
     /**
@@ -74,7 +75,8 @@ object Practice {
      * so although 2, 6 and 10 satisfy the function, they are thrown out.
      */
     // a helper method which you've written yourself
-    def myFilter[A](xs: List[A], f: A => Boolean) : List[A] = {
+    def myFilter[A](xs: List[A], f: A => Boolean) : List[A] =
+    {
         def myFilterHelper[A](xs: List[A], f: A => Boolean, index: Int) : List[A] = {
             (xs,f,index) match {
                 case (Nil,_,_) => Nil

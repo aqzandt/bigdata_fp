@@ -63,6 +63,8 @@ object Lists {
       * It contains some useful functions for this exercise. For this question library functions are allowed.
       */
     def customAverage(xs: List[Int], x: Int, n: Int): Int = {
-        xs.filter((p) => p > x).slice(0,n).sum/n
+        val list = xs.filter(p => p > x)
+        val len = if (n > list.size) list.size else n
+        list.slice(0, len).sum/len
     }
 }
