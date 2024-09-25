@@ -18,6 +18,12 @@ class FPPracticeTest extends FunSuite {
             List(5, 8, 7, 9, 6, 10),
             List(5, 5, 5, 6, 6, 5)
         )
+
+        val in2 = List(
+            List(3, 3, 5, 2, 1),
+            List(3, 5, 6, 5),
+            List(5, 6, 6, 6)
+        )
         assertResult(2) {
             passingStudents(in)
         }
