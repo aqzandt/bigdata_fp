@@ -30,8 +30,8 @@ class FPFunctionsTest extends FunSuite {
     }
 
     test("FoldR") {
-        assertResult(7) {
-            foldR(List(1, 5, 3, 6), (x: Int, y: Int) => x + y, -8)
+        assertResult(-4) {
+            foldR(List(1, 3), (x: Int, y: Int) => 2*x - y, 0)
         }
     }
 

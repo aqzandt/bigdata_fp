@@ -124,12 +124,10 @@ object PatternMatching2 {
      * 		append(List(1,3,5), List(2,4)) 	// List(1,3,5,2,4)
      */
     def append[A](xs: List[A], ys: List[A]) : List[A] = {
-      xs ::: ys
-//      Is xs ::: ys allowed? (Triple colon)
-//      ys match {
-//        case Nil => xs
-//        case y :: yTail => append(xs ::: y :: Nil, yTail)
-//      }
+      (xs) match {
+        case Nil => ys
+        case i :: tail => i :: append(tail, ys)
+      }
     }
 
 }
