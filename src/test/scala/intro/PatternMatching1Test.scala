@@ -23,6 +23,12 @@ class PatternMatching1Test extends FunSuite {
         }
     }
 
+    test("FirstDivByZero") {
+        assertResult(Nothing()) {
+            firstDivByX(List(6, 13, 8, 10, 12), 16)
+        }
+    }
+
     test("EvenNumbers") {
         assertResult(List(2, 4, 6, 8, 10)) {
             onlyEvenNumbers(List(Num(1), Num(2), Nothing(), Num(3), Num(4), Nothing(), Nothing(), Num(5), Nothing(), Num(6),
