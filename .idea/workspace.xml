@@ -52,8 +52,8 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager" selected="ScalaTest.FPFunctionsTest.FoldR">
-    <configuration name="FPFunctionsTest.Flatten" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
+  <component name="RunManager" selected="ScalaTest.FPFunctionsTest.Filter">
+    <configuration name="FPFunctionsTest.Filter" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
       <module name="fp-template" />
       <option name="allowRunningInParallel" value="false" />
       <option name="projectPathOnTarget" />
@@ -62,7 +62,7 @@
       </option>
       <option name="testKind" value="Test name" />
       <option name="testClassPath" value="fp_functions.FPFunctionsTest" />
-      <option name="testName" value="Flatten" />
+      <option name="testName" value="Filter" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -81,20 +81,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="FPFunctionsTest.Map" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
-      <module name="fp-template" />
-      <option name="allowRunningInParallel" value="false" />
-      <option name="projectPathOnTarget" />
-      <option name="selectedOptions">
-        <list />
-      </option>
-      <option name="testKind" value="Test name" />
-      <option name="testClassPath" value="fp_functions.FPFunctionsTest" />
-      <option name="testName" value="Map" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="FPFunctionsTest.Zip" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
       <module name="fp-template" />
       <option name="allowRunningInParallel" value="false" />
@@ -105,6 +91,20 @@
       <option name="testKind" value="Test name" />
       <option name="testClassPath" value="fp_functions.FPFunctionsTest" />
       <option name="testName" value="Zip" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ListsTest.Example" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
+      <module name="fp-template" />
+      <option name="allowRunningInParallel" value="false" />
+      <option name="projectPathOnTarget" />
+      <option name="selectedOptions">
+        <list />
+      </option>
+      <option name="testKind" value="Test name" />
+      <option name="testClassPath" value="intro.ListsTest" />
+      <option name="testName" value="Example" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -125,11 +125,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="ScalaTest.FPFunctionsTest.Filter" />
+        <item itemvalue="ScalaTest.ListsTest.Example" />
         <item itemvalue="ScalaTest.FPFunctionsTest.FoldR" />
         <item itemvalue="ScalaTest.FPFunctionsTest.Zip" />
         <item itemvalue="ScalaTest.PatternMatching2Test.append" />
-        <item itemvalue="ScalaTest.FPFunctionsTest.Flatten" />
-        <item itemvalue="ScalaTest.FPFunctionsTest.Map" />
       </list>
     </recent_temporary>
   </component>
@@ -141,7 +141,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1726772795375</updated>
-      <workItem from="1726772796442" duration="16632000" />
+      <workItem from="1726772796442" duration="17766000" />
     </task>
     <servers />
   </component>

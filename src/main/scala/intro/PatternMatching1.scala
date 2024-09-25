@@ -1,5 +1,7 @@
 package intro
 
+import scala.annotation.tailrec
+
 /**
  * PART 1 - LISTS AND PATTERN MATCHING
  * This part gives you some basic information about pattern matching.
@@ -99,6 +101,7 @@ object PatternMatching1 {
    *
    *         Hint: you can use if statements in pattern matching.
    */
+  @tailrec
   def firstDivByX(xs: List[Int], n: Int): OptionalNum = {
     xs match {
       case Nil => Nothing()

@@ -200,7 +200,14 @@ object FPFunctions {
       * @tparam A the type of the items in `xs`.
       * @return a list of all items in `xs` that satisfy `f`.
       */
-    def filter[A](xs: List[A], f: A => Boolean): List[A] = ???
+    def filter[A](xs: List[A], f: A => Boolean): List[A] = {
+        xs match {
+            case Nil => Nil
+            case i :: tail =>
+                if(f(i)) i :: filter(tail, f)
+                else filter(tail, f)
+        }
+    }
 
     /** Q16 (5p)
       * Recursively flattens a list that may contain more lists into 1 list.

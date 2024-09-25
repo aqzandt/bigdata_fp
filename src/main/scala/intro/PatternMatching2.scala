@@ -1,5 +1,7 @@
 package intro
 
+import scala.annotation.tailrec
+
 /**
  * PART 2 - LISTS AND PATTERN MATCHING
  * you should implement recursive functions yourself
@@ -86,6 +88,7 @@ object PatternMatching2 {
      * NB! Note that we don't provide a test case for this exercise.
      * You are encouraged to write your own tests
      */
+    @tailrec
     def myForAll[A](xs : List[A], f: A => Boolean) : Boolean = {
       (xs, f) match {
         case (Nil, _) => true
@@ -106,6 +109,7 @@ object PatternMatching2 {
      * 	lastElem(List()) // None
      * 	lastElem(List.range(0,3)) // Some(2) (range has exclusive ceiling)
      */
+    @tailrec
     def lastElem[A](xs : List[A]) : Option[A] = {
       xs match {
         case Nil => None
