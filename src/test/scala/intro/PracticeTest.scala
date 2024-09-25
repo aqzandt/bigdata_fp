@@ -16,4 +16,18 @@ class PracticeTest extends FunSuite {
             maxValue(List(10, 4, 14, -4, 15, 14, 16, 7))
         }
     }
+
+    test("intList") {
+        assertResult(List(5,6,7)) {
+            intList(5,7)
+        }
+    }
+
+    test("funcTest") {
+        val nrs = List.range(0,11) // List(0,1,2,3,...,10)
+         // List(0,4,8)
+        assertResult(List(0,4,8)) {
+            myFilter(nrs, (i: Int) => i % 2 == 0)
+        }
+    }
 }
