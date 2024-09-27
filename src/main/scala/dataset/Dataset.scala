@@ -1,9 +1,9 @@
 package dataset
 
-import dataset.util.Commit.Commit
+import dataset.util.Commit.{Commit, Stats}
 
 import java.text.SimpleDateFormat
-import java.util.SimpleTimeZone
+import java.util.{Date, SimpleTimeZone}
 import scala.math.Ordering.Implicits._
 
 /**
@@ -25,7 +25,31 @@ object Dataset {
    * @param input the list of commits to process.
    * @return the average amount of additions in the commits that have stats data.
    */
-  def avgAdditions(input: List[Commit]): Int = ???
+  def avgAdditions(input: List[Commit]): Int = {
+    def getSum(commits: List[Commit]): Int = {
+      commits match {
+        case Nil => 0
+        case i :: tail =>
+          i.stats match {
+            case None => getSum(tail)
+            case x => x.get.additions + getSum(tail)
+          }
+      }
+    }
+
+    def getNumberOfSomes(commits: List[Commit]): Int = {
+      commits match {
+        case Nil => 0
+        case i :: tail =>
+          i.stats match {
+            case None => getNumberOfSomes(tail)
+            case x => 1 + getNumberOfSomes(tail)
+          }
+      }
+    }
+
+    getSum(input) / getNumberOfSomes(input)
+  }
 
   /** Q24 (4p)
    * Find the hour of day (in 24h notation, UTC time) during which the most javascript (.js) files are changed in commits.
@@ -37,6 +61,30 @@ object Dataset {
    * @return the hour and the amount of files changed during this hour.
    */
   def jsTime(input: List[Commit]): (Int, Int) = ???
+    /*def getHour(commit: Commit): Int = {
+      commit.commit.committer.date.getHours // returns the hour in 24-hour format
+    }
+
+    val hourToJsFileCount: Map[Int, Int] = input
+      .flatMap(commit => {
+        // Extract the hour of the commit
+        val hour = getHour(commit)
+
+        // Filter out .js files and map each to the hour
+        val someFiles = commit.files.filter(file => file.filename.isDefined)
+        val jsFiles = someFiles.filter(file => file.filename.takeRight(3) == ".js")
+
+        // For each JS file, return the hour associated with it
+        jsFiles.map(_ => hour)
+      })
+      // Group by hour and count the number of JS files changed in each hour
+      .groupBy(identity)
+      .view.mapValues(_.size)
+      .toMap
+
+    // Step 2: Find the hour with the maximum number of JS file changes
+    hourToJsFileCount.maxBy(_._2)*/
+
 
 
   /** Q25 (5p)
@@ -61,6 +109,14 @@ object Dataset {
    *         Map("KosDP1987/students" -> 1, "giahh263/HQWord" -> 2)
    */
   def commitsPerRepo(input: List[Commit]): Map[String, Int] = ???
+    /*val only2019 = input.filter(commit => commit.commit.committer.date.getYear == 119)
+    def helper(input: List[Commit]): Map[String, Int] = {
+      input match {
+        case Nil =>  Map.empty[String, Int]
+        case i :: tail =>
+          i.
+      }
+    }*/
 
 
   /** Q27 (9p)
