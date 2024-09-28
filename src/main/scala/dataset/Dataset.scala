@@ -65,7 +65,6 @@ object Dataset {
    * @return the hour and the amount of files changed during this hour.
    */
   def jsTime(input: List[Commit]): (Int, Int) = {
-    if (input == Nil) return (0, 0)
     val dateFormat = new SimpleDateFormat("HH")
     dateFormat.setTimeZone(new SimpleTimeZone(0, "UTC"))
     val timeFiles = input.map(Commit => (dateFormat.format(Commit.commit.committer.date).toInt,
@@ -118,7 +117,11 @@ object Dataset {
    * @param repo  the repository name to consider.
    * @return the name and amount of commits for the top committer.
    */
-  def topCommitter(input: List[Commit], repo: String): (String, Int) = ???
+  def topCommitter(input: List[Commit], repo: String): (String, Int) = {
+    val list = input.map(Commit => (Commit.commit.author.name, Commit.url.substring(29,Commit.url.length-49)))
+    val repoList = list.filter(s => s._2.equals(repo)).map(s => s._1)
+    repoList.groupBy(identity).map(i => (i._1, i._2.length)).max
+  }
 
   /** Q26 (9p)
    * For each repository, output the name and the amount of commits that were made to this repository in 2019 only.
@@ -130,7 +133,12 @@ object Dataset {
    *         Example output:
    *         Map("KosDP1987/students" -> 1, "giahh263/HQWord" -> 2)
    */
-  def commitsPerRepo(input: List[Commit]): Map[String, Int] = ???
+  def commitsPerRepo(input: List[Commit]): Map[String, Int] = {
+    val dateFormat = new SimpleDateFormat("YYYY")
+    dateFormat.setTimeZone(new SimpleTimeZone(0, "UTC"))
+    input.map(Commit => (Commit.url.substring(29,Commit.url.length-49),dateFormat.format(Commit.commit.committer.date)))
+      .filter(i => i._2.equals("2019")).map(i => i._1).groupBy(identity).map(i => (i._1, i._2.length))
+  }
     /*val only2019 = input.filter(commit => commit.commit.committer.date.getYear == 119)
     def helper(input: List[Commit]): Map[String, Int] = {
       input match {
@@ -147,7 +155,11 @@ object Dataset {
    * @param input the list of commits to process.
    * @return 5 tuples containing the file extension and frequency of the most frequently appeared file types, ordered descendingly.
    */
-  def topFileFormats(input: List[Commit]): List[(String, Int)] = ???
+  def topFileFormats(input: List[Commit]): List[(String, Int)] = {
+    val sortedList = input.flatMap(Commit => Commit.files).flatMap(file => file.filename).map(s => s.substring(s.lastIndexOf('.')+1))
+      .groupBy(identity).map(i => (i._1, i._2.length)).toList.sortBy(i => i._2).reverse
+    sortedList.slice(0,5)
+  }
 
 
   /** Q28 (9p)
@@ -163,5 +175,11 @@ object Dataset {
    *
    * Hint: for the time, use `SimpleDateFormat` and `SimpleTimeZone`.
    */
-  def mostProductivePart(input: List[Commit]): (String, Int) = ???
+  def mostProductivePart(input: List[Commit]): (String, Int) = {
+    val dateFormat = new SimpleDateFormat("HH")
+    dateFormat.setTimeZone(new SimpleTimeZone(0, "UTC"))
+    val func = (i:Int) => if (i >= 21 || i < 5) "night" else if (i >= 5 && i < 12) "morning" else if (i >=12 && i < 17) "afternoon" else "evening"
+    input.map(Commit => dateFormat.format(Commit.commit.committer.date).toInt).map(func).groupBy(identity).map(i => (i._1, i._2.length))
+      .toList.sortBy(i => i._2).reverse.head
+  }
 }

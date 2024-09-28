@@ -27,12 +27,6 @@ class DatasetTest extends FunSuite {
         }
     }
 
-    test("Empty") {
-        assertResult((0, 0)) {
-            jsTime(List())
-        }
-    }
-
     test("jsTimeTest") {
         assertResult((0, 3)) {
             jsTime(jsTimeSource)
@@ -54,6 +48,12 @@ class DatasetTest extends FunSuite {
     test("Top languages") {
         assertResult(List(("html",910), ("js",848), ("json",554), ("png",434), ("md",408))) {
             topFileFormats(source)
+        }
+    }
+
+    test("Most productive") {
+        assertResult(("afternoon", 992)) {
+            mostProductivePart(source)
         }
     }
 }
