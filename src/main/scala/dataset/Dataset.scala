@@ -2,8 +2,9 @@ package dataset
 
 import dataset.util.Commit.Commit
 
+import java.{text, util}
 import java.text.SimpleDateFormat
-import java.util.SimpleTimeZone
+import java.util.{Date, SimpleTimeZone}
 import scala.math.Ordering.Implicits._
 
 /**
@@ -25,7 +26,11 @@ object Dataset {
    * @param input the list of commits to process.
    * @return the average amount of additions in the commits that have stats data.
    */
-  def avgAdditions(input: List[Commit]): Int = ???
+  def avgAdditions(input: List[Commit]): Int =
+    {
+      val additions = input.flatMap(Commit => Commit.stats).map(stats => stats.additions)
+      additions.sum/additions.size
+    }
 
   /** Q24 (4p)
    * Find the hour of day (in 24h notation, UTC time) during which the most javascript (.js) files are changed in commits.
@@ -36,7 +41,25 @@ object Dataset {
    * @param input list of commits to process.
    * @return the hour and the amount of files changed during this hour.
    */
-  def jsTime(input: List[Commit]): (Int, Int) = ???
+  def jsTime(input: List[Commit]): (Int, Int) = {
+    val dateFormat = new SimpleDateFormat("HH")
+    val timeZone = new SimpleTimeZone(0, "0")
+    dateFormat.setTimeZone(timeZone)
+    val timeFiles = input.map(Commit => (dateFormat.format(Commit.commit.committer.date).toInt,
+      Commit.files.flatMap(File => File.filename).count(s => s.endsWith(".js"))))
+    def hours(inp: List[(Int, Int)], hour: Int): Int = (inp, hour) match {
+      case (Nil,_) => 0
+      case (i :: tail,hr) => if (i._1 == hr) i._2 + hours(tail, hr) else 0
+    }
+    def loopAllHours(hour: Int): List[Int] = hour match {
+      case 24 => Nil
+      case i => List(hours(timeFiles, i)) ::: loopAllHours(i+1)
+    }
+    val hoursList = loopAllHours(0)
+    val maxCount = hoursList.max
+    val maxIndex = hoursList.indexOf(maxCount)
+    (maxIndex, maxCount)
+  }
 
 
   /** Q25 (5p)
