@@ -119,8 +119,9 @@ object Dataset {
    */
   def topCommitter(input: List[Commit], repo: String): (String, Int) = {
     val list = input.map(Commit => (Commit.commit.author.name, Commit.url.substring(29,Commit.url.length-49)))
-    val repoList = list.filter(s => s._2.equals(repo)).map(s => s._1)
-    repoList.groupBy(identity).map(i => (i._1, i._2.length)).max
+    val authorRepoCount = list.groupBy(identity).map(i => (i._1, i._2.length)).toList.sortBy(i => i._2).reverse
+    val repoList = authorRepoCount.filter(i => i._1._2.equals(repo))
+    (repoList.head._1._1,repoList.head._2)
   }
 
   /** Q26 (9p)

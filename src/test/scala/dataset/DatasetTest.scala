@@ -39,6 +39,13 @@ class DatasetTest extends FunSuite {
         }
     }
 
+    test("Top committer 2") {
+        assertResult(("Johannes", 22)) {
+            topCommitter(source, "keptn-deploy/sockshop")
+        }
+    }
+
+
     test("Commits per repo") {
         assertResult(read[Map[String, Int]](Source.fromResource("commits_per_repo.json").mkString)) {
             commitsPerRepo(source)
