@@ -29,30 +29,6 @@ object Dataset {
     {
       val additions = input.flatMap(Commit => Commit.stats).map(stats => stats.additions)
       additions.sum/additions.size
-
-/*      def getSum(commits: List[Commit]): Int = {
-        commits match {
-          case Nil => 0
-          case i :: tail =>
-            i.stats match {
-              case None => getSum(tail)
-              case x => x.get.additions + getSum(tail)
-            }
-        }
-      }
-
-      def getNumberOfSomes(commits: List[Commit]): Int = {
-        commits match {
-          case Nil => 0
-          case i :: tail =>
-            i.stats match {
-              case None => getNumberOfSomes(tail)
-              case x => 1 + getNumberOfSomes(tail)
-            }
-        }
-      }
-
-      getSum(input) / getNumberOfSomes(input)*/
     }
 
   /** Q24 (4p)
@@ -81,30 +57,6 @@ object Dataset {
     val maxCount = hoursList.max
     val maxIndex = hoursList.indexOf(maxCount)
     (maxIndex, maxCount)
-
-    /*def getHour(commit: Commit): Int = {
-      commit.commit.committer.date.getHours // returns the hour in 24-hour format
-    }
-
-    val hourToJsFileCount: Map[Int, Int] = input
-      .flatMap(commit => {
-        // Extract the hour of the commit
-        val hour = getHour(commit)
-
-        // Filter out .js files and map each to the hour
-        val someFiles = commit.files.filter(file => file.filename.isDefined)
-        val jsFiles = someFiles.filter(file => file.filename.takeRight(3) == ".js")
-
-        // For each JS file, return the hour associated with it
-        jsFiles.map(_ => hour)
-      })
-      // Group by hour and count the number of JS files changed in each hour
-      .groupBy(identity)
-      .view.mapValues(_.size)
-      .toMap
-
-    // Step 2: Find the hour with the maximum number of JS file changes
-    hourToJsFileCount.maxBy(_._2)*/
   }
 
 
@@ -140,15 +92,6 @@ object Dataset {
     input.map(Commit => (Commit.url.substring(29,Commit.url.length-49),dateFormat.format(Commit.commit.committer.date)))
       .filter(i => i._2.equals("2019")).map(i => i._1).groupBy(identity).map(i => (i._1, i._2.length))
   }
-    /*val only2019 = input.filter(commit => commit.commit.committer.date.getYear == 119)
-    def helper(input: List[Commit]): Map[String, Int] = {
-      input match {
-        case Nil =>  Map.empty[String, Int]
-        case i :: tail =>
-          i.
-      }
-    }*/
-
 
   /** Q27 (9p)
    * Derive the 5 file types that appear most frequent in the commit logs.
