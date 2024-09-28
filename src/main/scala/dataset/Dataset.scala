@@ -65,11 +65,12 @@ object Dataset {
    * @return the hour and the amount of files changed during this hour.
    */
   def jsTime(input: List[Commit]): (Int, Int) = {
+    if (input == Nil) return (0, 0)
     val dateFormat = new SimpleDateFormat("HH")
-    val timeZone = new SimpleTimeZone(0, "0")
-    dateFormat.setTimeZone(timeZone)
+    dateFormat.setTimeZone(new SimpleTimeZone(0, "0"))
     val timeFiles = input.map(Commit => (dateFormat.format(Commit.commit.committer.date).toInt,
       Commit.files.flatMap(File => File.filename).count(s => s.endsWith(".js"))))
+
     def hours(inp: List[(Int, Int)], hour: Int): Int = (inp, hour) match {
       case (Nil,_) => 0
       case (i :: tail,hr) => if (i._1 == hr) i._2 + hours(tail, hr) else 0

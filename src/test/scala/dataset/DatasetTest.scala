@@ -12,17 +12,7 @@ import scala.io.Source
 class DatasetTest extends FunSuite {
 
     implicit val formats: AnyRef with Formats = Serialization.formats(NoTypeHints)
-//    val helper = Source.fromResource("1000_commits.json")
-//    assertResult(null) {
-//        Source.fromResource("src/test/resources/1000_commits.json")
-//    }
-    val source: List[Commit] =
-        Source
-          .fromResource("../../resources/1000_commits.json")
-          .getLines()
-          .map(
-              Serialization.read[Commit])
-          .toList
+    val source: List[Commit] = Source.fromResource("1000_commits.json").getLines().map(Serialization.read[Commit]).toList
 
     test("Average additions"){
         assertResult(3137) {
@@ -33,6 +23,12 @@ class DatasetTest extends FunSuite {
     test("Time of day javascript") {
         assertResult((12, 830)) {
             jsTime(source)
+        }
+    }
+
+    test("Empty") {
+        assertResult((0, 0)) {
+            jsTime(List())
         }
     }
 
