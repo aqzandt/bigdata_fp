@@ -22,7 +22,7 @@ object FPPractice {
             (xs, counter) match {
                 case (Nil, _) => 0
                 case (_, 10) => 0
-                case (i :: tail, _) if(i > 25) => i + helper(tail, counter + 1)
+                case (i :: tail, _) if i > 25 => i + helper(tail, counter + 1)
                 case (i :: tail, _) => helper(tail, counter)
             }
         }
@@ -73,6 +73,7 @@ object FPPractice {
       * Read the documentation on the `Option` class to find out what you should return.
       * Hint: it is very similar to the `OptionalInt` you saw earlier.
       */
+    @tailrec
     def headSumsTail(xs: List[List[Int]]): Option[Int] = {
         def getSum(xs: List[Int]): Int = {
             xs match {

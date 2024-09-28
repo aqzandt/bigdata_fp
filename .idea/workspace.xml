@@ -5,9 +5,41 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="72a35dc5-490b-4ae7-82b7-56902fdb6347" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/main/scala/intro/Functions.scala" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/scala/intro/Functions.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/scala/intro/Practice.scala" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/scala/intro/Practice.scala" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/scala/intro/FunctionsTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/scala/intro/FunctionsTest.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_thoughtworks_paranamer_paranamer_2_8.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__joda_time_joda_time_2_10_1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__junit_junit_4_12.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_hamcrest_hamcrest_core_1_3.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_joda_joda_convert_2_2_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_json4s_json4s_ast_2_12_3_6_6.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_json4s_json4s_core_2_12_3_6_6.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_json4s_json4s_ext_2_12_3_6_6.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_json4s_json4s_native_2_12_3_6_6.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_json4s_json4s_scalap_2_12_3_6_6.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_scala_lang_modules_scala_parser_combinators_2_12_1_1_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_scala_lang_modules_scala_xml_2_12_1_0_6.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_scala_lang_scala_library_2_12_6.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_scala_lang_scala_reflect_2_12_4.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_scala_sbt_test_interface_1_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_scalactic_scalactic_2_12_3_0_5.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_scalatest_scalatest_2_12_3_0_5.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_specs2_specs2_common_2_12_4_2_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_specs2_specs2_core_2_12_4_2_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_specs2_specs2_fp_2_12_4_2_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_specs2_specs2_junit_2_12_4_2_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_specs2_specs2_matcher_2_12_4_2_0.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fp-template.iml" beforeDir="false" afterPath="$PROJECT_DIR$/fp-template.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/scala/dataset/Dataset.scala" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/scala/dataset/Dataset.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/scala/dataset/DatasetTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/scala/dataset/DatasetTest.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/dataset/Dataset$.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/dataset/Dataset$.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/intro/Lists$.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/intro/Lists$.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/intro/Practice$.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/intro/Practice$.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/dataset/DatasetTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/dataset/DatasetTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/intro/ListsTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/intro/ListsTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/intro/PatternMatching1Test.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/intro/PatternMatching1Test.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/intro/PracticeTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/intro/PracticeTest.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,9 +60,9 @@
   <component name="ProjectCodeStyleSettingsMigration">
     <option name="version" value="2" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 0
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
   <component name="ProjectId" id="2mIn7NhdKI48uz1sAAv4qmrK1fY" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -40,34 +72,21 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "C:/Delft/Y2/Q1/Big Data Processing/bigdata_fp",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/Delft/Y2/Q1/Big Data Processing/fp_template",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
-    "project.structure.last.edited": "Global Libraries",
+    "project.structure.last.edited": "Project",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
     "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager" selected="ScalaTest.FPPracticeTest.Head sums tail">
-    <configuration name="FPFunctionsTest.Filter" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
-      <module name="fp-template" />
-      <option name="allowRunningInParallel" value="false" />
-      <option name="projectPathOnTarget" />
-      <option name="selectedOptions">
-        <list />
-      </option>
-      <option name="testKind" value="Test name" />
-      <option name="testClassPath" value="fp_functions.FPFunctionsTest" />
-      <option name="testName" value="Filter" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="FPPracticeTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
+  <component name="RunManager" selected="ScalaTest.DatasetTest.Average additions">
+    <configuration name="DatasetTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
       <module name="fp-template" />
       <option name="allowRunningInParallel" value="false" />
       <option name="projectPathOnTarget" />
@@ -75,12 +94,12 @@
         <list />
       </option>
       <option name="testKind" value="Class" />
-      <option name="testClassPath" value="fp_practice.FPPracticeTest" />
+      <option name="testClassPath" value="dataset.DatasetTest" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="FPPracticeTest.First 10" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
+    <configuration name="DatasetTest.Average additions" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
       <module name="fp-template" />
       <option name="allowRunningInParallel" value="false" />
       <option name="projectPathOnTarget" />
@@ -88,8 +107,22 @@
         <list />
       </option>
       <option name="testKind" value="Test name" />
-      <option name="testClassPath" value="fp_practice.FPPracticeTest" />
-      <option name="testName" value="First 10" />
+      <option name="testClassPath" value="dataset.DatasetTest" />
+      <option name="testName" value="Average additions" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="DatasetTest.Time of day javascript" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true" nameIsGenerated="true" show_console_on_std_err="false" show_console_on_std_out="false">
+      <module name="fp-template" />
+      <option name="allowRunningInParallel" value="false" />
+      <option name="projectPathOnTarget" />
+      <option name="selectedOptions">
+        <list />
+      </option>
+      <option name="testKind" value="Test name" />
+      <option name="testClassPath" value="dataset.DatasetTest" />
+      <option name="testName" value="Time of day javascript" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -124,11 +157,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="ScalaTest.DatasetTest.Average additions" />
+        <item itemvalue="ScalaTest.DatasetTest" />
+        <item itemvalue="ScalaTest.DatasetTest.Time of day javascript" />
         <item itemvalue="ScalaTest.FPPracticeTest.Head sums tail" />
         <item itemvalue="ScalaTest.FPPracticeTest.Passing grades" />
-        <item itemvalue="ScalaTest.FPPracticeTest.First 10" />
-        <item itemvalue="ScalaTest.FPPracticeTest" />
-        <item itemvalue="ScalaTest.FPFunctionsTest.Filter" />
       </list>
     </recent_temporary>
   </component>
@@ -140,11 +173,22 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1726772795375</updated>
-      <workItem from="1726772796442" duration="22335000" />
+      <workItem from="1726772796442" duration="28854000" />
+      <workItem from="1727368714005" duration="4600000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="java.lang.NullPointerException" package="java.lang" />
+          <option name="timeStamp" value="5" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
