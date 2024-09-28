@@ -13,6 +13,7 @@ class DatasetTest extends FunSuite {
 
     implicit val formats: AnyRef with Formats = Serialization.formats(NoTypeHints)
     val source: List[Commit] = Source.fromResource("1000_commits.json").getLines().map(Serialization.read[Commit]).toList
+    val jsTimeSource: List[Commit] = Source.fromResource("jsTimeTest.json").getLines().map(Serialization.read[Commit]).toList
 
     test("Average additions"){
         assertResult(3137) {
@@ -29,6 +30,12 @@ class DatasetTest extends FunSuite {
     test("Empty") {
         assertResult((0, 0)) {
             jsTime(List())
+        }
+    }
+
+    test("jsTimeTest") {
+        assertResult((0, 3)) {
+            jsTime(jsTimeSource)
         }
     }
 

@@ -67,17 +67,16 @@ object Dataset {
   def jsTime(input: List[Commit]): (Int, Int) = {
     if (input == Nil) return (0, 0)
     val dateFormat = new SimpleDateFormat("HH")
-    dateFormat.setTimeZone(new SimpleTimeZone(0, "0"))
+    dateFormat.setTimeZone(new SimpleTimeZone(0, "UTC"))
     val timeFiles = input.map(Commit => (dateFormat.format(Commit.commit.committer.date).toInt,
       Commit.files.flatMap(File => File.filename).count(s => s.endsWith(".js"))))
-
     def hours(inp: List[(Int, Int)], hour: Int): Int = (inp, hour) match {
       case (Nil,_) => 0
-      case (i :: tail,hr) => if (i._1 == hr) i._2 + hours(tail, hr) else 0
+      case (i :: tail,hr) => if (i._1 == hr) i._2 + hours(tail, hr) else hours(tail, hr)
     }
     def loopAllHours(hour: Int): List[Int] = hour match {
       case 24 => Nil
-      case i => List(hours(timeFiles, i)) ::: loopAllHours(i+1)
+      case hr => List(hours(timeFiles, hr)) ::: loopAllHours(hr+1)
     }
     val hoursList = loopAllHours(0)
     val maxCount = hoursList.max
