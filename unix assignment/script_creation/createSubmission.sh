@@ -5,4 +5,4 @@
 # This script should take an output name as the first parameter.
 # If called in a directory, it should recursively find all the `.sh` files and add them to a zip folder.
 # The zip folder should only contain `.sh` files and no folders.
-find . | sed -n '/\.sh$/p' | zip -@ -r -j $1.zip
+find . | sed -n '/\.sh$/p' | zip -@ -r -j $1
