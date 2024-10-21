@@ -1,12 +1,11 @@
 package RDDAssignment
 
 import java.util.UUID
-
 import java.math.BigInteger
 import java.security.MessageDigest
-
 import org.apache.spark.graphx.Graph
 import org.apache.spark.rdd.RDD
+import shapeless.syntax.std.tuple.productTupleOps
 import utils.{Commit, File, Stats}
 
 object RDDAssignment {
@@ -19,7 +18,7 @@ object RDDAssignment {
     * @param commits RDD containing commit data.
     * @return Long indicating the number of commits in the given RDD.
     */
-  def assignment_1(commits: RDD[Commit]): Long = ???
+  def assignment_1(commits: RDD[Commit]): Long = commits.count()
 
   /**
     * We want to know how often programming languages are used in committed files. We want you to return an RDD containing Tuples
@@ -29,7 +28,27 @@ object RDDAssignment {
     * @param commits RDD containing commit data.
     * @return RDD containing tuples indicating the programming language (extension) and number of occurrences.
     */
-  def assignment_2(commits: RDD[Commit]): RDD[(String, Long)] = ???
+  def assignment_2(commits: RDD[Commit]): RDD[(String, Long)] = {
+    commits
+      .flatMap(commit => commit.files) // Flatten the list of files
+      .map(file => {
+        file.filename match {
+          case Some(name) =>
+            // Get the index of the last . in the filename
+            val dotIndex = name.lastIndexOf(".")
+            // Extract the extension if present, otherwise assign "unknown"
+            if (dotIndex >= 0 && dotIndex < name.length - 1) {
+              name.substring(dotIndex + 1) // Get the file extension
+            } else {
+              "unknown" // No extension or invalid file name
+            }
+          case None => "unknown" // No filename provided
+        }
+      })
+      .map(extension => (extension, 1))
+      .reduceByKey(_ + _) // Sum the occurrences of each extension
+      .map { case (extension, count) => (extension, count.toLong) } // Convert counts to Long
+  }
 
   /**
     * Competitive users on GitHub might be interested in their ranking in the number of commits. We want you to return an
@@ -41,7 +60,14 @@ object RDDAssignment {
     * @param commits RDD containing commit data.
     * @return RDD containing the rank, the name and the total number of commits for every author, in the ordered fashion.
     */
-  def assignment_3(commits: RDD[Commit]): RDD[(Long, String, Long)] = ???
+  def assignment_3(commits: RDD[Commit]): RDD[(Long, String, Long)] = {
+    commits
+      .map(commit => (commit.commit.author.name, 1))
+      .reduceByKey((acc, x) => acc + x)
+      .sortBy(x => ( - x._2, x._1.toLowerCase))
+      .zipWithIndex()
+      .map { case ((author, count), index) => (index, author, count.toLong) }
+  }
 
   /**
     * Some users are interested in seeing an overall contribution of all their work. For this exercise we want an RDD that
@@ -54,7 +80,35 @@ object RDDAssignment {
     * @param commits RDD containing commit data.
     * @return RDD containing committer names and an aggregation of the committers Stats.
     */
-  def assignment_4(commits: RDD[Commit], users: List[String]): RDD[(String, Stats)] = ???
+  def assignment_4(commits: RDD[Commit], users: List[String]): RDD[(String, Stats)] = {
+
+    def combineOptionalStats(stats1: Option[Stats], stats2: Option[Stats]): Stats = {
+      if(stats1.isEmpty) {
+        if(stats2.isEmpty) Stats(total = 0, additions = 0, deletions = 0)
+        else Stats(total = stats2.get.total, additions = stats2.get.additions, deletions = stats2.get.deletions)
+      }
+      else {
+        if(stats2.isEmpty) Stats(total = stats1.get.total, additions = stats1.get.additions, deletions = stats1.get.deletions)
+        else Stats(
+          total = stats1.get.total + stats2.get.total, additions = stats1.get.additions + stats2.get.additions, deletions = stats1.get.deletions + stats2.get.deletions
+        )
+      }
+    }
+
+    def combineStats(stats1: Stats, stats2: Stats): Stats = {
+      Stats(
+          total = stats1.total + stats2.total, additions = stats1.additions + stats2.additions, deletions = stats1.deletions + stats2.deletions
+      )
+    }
+
+    commits
+      .filter(commit => users.contains(commit.commit.author.name))
+      .map { commit =>
+        val stats = commit.stats.getOrElse(Stats(0, 0, 0)) // Provide default value if stats is None
+        (commit.commit.author.name, stats)
+      }
+      .reduceByKey(combineStats)
+  }
 
 
   /**

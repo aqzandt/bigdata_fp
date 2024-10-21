@@ -54,6 +54,14 @@ class StudentTest extends FunSuite with BeforeAndAfterAll {
     }
   }
 
+//  test("Assert RDD assignment 2 extra") {
+//    val studentResult: RDD[(String, Long)] = RDDAssignment.assignment_2(commitRDD)
+//    val expectedSet = Set(("cmake", 13L), ("png", 4467L))
+//    assertResult(expectedSet) {
+//      studentResult.collect().toSet.intersect(expectedSet)
+//    }
+//  }
+
 
   test("Assert RDD assignment 3") {
     val studentResult: RDD[(Long, String, Long)] = RDDAssignment.assignment_3(commitRDD)
@@ -62,6 +70,14 @@ class StudentTest extends FunSuite with BeforeAndAfterAll {
       studentResult.take(96).toSet.intersect(expected)
     }
   }
+
+//  test("Assert RDD assignment 3 extra") {
+//    val studentResult: RDD[(Long, String, Long)] = RDDAssignment.assignment_3(commitRDD)
+//    val expected = Set((8L, "Otto Taute", 34L), (9L, "SpeedTracker", 33L), (87L, "John", 8L))
+//    assertResult() {
+//      studentResult.take(9000)
+//    }
+//  }
 
   test("Assert RDD assignment 4") {
     val studentResult: RDD[(String, Stats)] = RDDAssignment.assignment_4(commitRDD, List("Otto Taute"))

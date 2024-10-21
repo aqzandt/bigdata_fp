@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="72a35dc5-490b-4ae7-82b7-56902fdb6347" name="Changes" comment="" />
+    <list default="true" id="72a35dc5-490b-4ae7-82b7-56902fdb6347" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/spark assignment/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/spark assignment/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/spark assignment/src/main/scala/RDDAssignment/RDDAssignment.scala" beforeDir="false" afterPath="$PROJECT_DIR$/spark assignment/src/main/scala/RDDAssignment/RDDAssignment.scala" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -37,7 +40,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Delft/Y2/Q1/Big Data Processing/bigdata assignments/spark assignment",
+    "last_opened_file_path": "C:/Delft/Y2/Q1/Big Data Processing/bigdata assignments",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -143,6 +146,7 @@
       <workItem from="1727689131310" duration="1604000" />
       <workItem from="1727720223964" duration="600000" />
       <workItem from="1729501826690" duration="52000" />
+      <workItem from="1729507043425" duration="315000" />
     </task>
     <servers />
   </component>
