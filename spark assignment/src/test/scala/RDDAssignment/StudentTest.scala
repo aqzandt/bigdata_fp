@@ -94,6 +94,10 @@ class StudentTest extends FunSuite with BeforeAndAfterAll {
     }
   }
 
+  test("Assert RDD assignment 5 Print") {
+    RDDAssignment.assignment_5(commitRDD).take(10).foreach(println)
+  }
+
   test("Assert RDD assignment 6") {
     val studentResult: RDD[(String, (Int, Int))] = RDDAssignment.assignment_6(commitRDD.sample(false, 0.5, 0L))
     val expectedSet = Set(("Oscar Näzell", (2, 1)), ("DMEdesignmyeye", (2, 1)), ("zebbykhairah", (1, 1)),

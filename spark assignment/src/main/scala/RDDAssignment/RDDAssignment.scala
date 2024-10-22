@@ -1,5 +1,7 @@
 package RDDAssignment
 
+import org.apache.spark.{Partition, TaskContext}
+
 import java.util.UUID
 import java.math.BigInteger
 import java.security.MessageDigest
@@ -123,7 +125,11 @@ object RDDAssignment {
     * @return RDD of Strings representing the usernames that have either only committed to repositories or only own
     *         repositories.
     */
-  def assignment_5(commits: RDD[Commit]): RDD[String] = ???
+  def assignment_5(commits: RDD[Commit]): RDD[String] = {
+    val owners = commits.map(x => x.url.substring(29, x.url.indexOf('/', 29))).distinct()
+    val commiters = commits.map(x => x.commit.author.name).distinct()
+    owners.union(commiters).map(x => (x, 1)).reduceByKey((acc, x) => acc + x).filter(x => x._2 == 1).map(x => x._1)
+  }
 
   /**
     * Sometimes developers make mistakes and sometimes they make many many of them. One way of observing mistakes in commits is by
@@ -140,7 +146,14 @@ object RDDAssignment {
     * @return RDD of Tuples containing a commit author's name and a Tuple which contains the length of the longest
     *         'revert streak' as well its frequency.
     */
-  def assignment_6(commits: RDD[Commit]): RDD[(String, (Int, Int))] = ???
+  def assignment_6(commits: RDD[Commit]): RDD[(String, (Int, Int))] = {
+    def countReverts(message: String): Int = {
+      if (message.startsWith("Revert \"")) 1 + countReverts(message.substring(8)) else
+      if (message.startsWith("Revert ")) 1 + countReverts(message.substring(7)) else 0
+    }
+    commits.map(x => (x.commit.author.name, countReverts(x.commit.message))).map(x => (x,1)).reduceByKey((x,y) => x+y)
+      .map(x => (x._1._1,(x._1._2,x._2))).reduceByKey((x,y) => if (x._1>y._1) x else y).filter(x => x._2._1 != 0)
+  }
 
 
   /**
@@ -156,7 +169,13 @@ object RDDAssignment {
     * @return RDD containing Tuples with the repository name, the number of commits made to the repository as
     *         well as the names of the unique committers to this repository.
     */
-  def assignment_7(commits: RDD[Commit]): RDD[(String, Long, Iterable[String])] = ???
+  def assignment_7(commits: RDD[Commit]): RDD[(String, Long, Iterable[String])] = {
+    def getRepo(url: String): String = {
+      url.substring(url.indexOf('/', 29)+1,url.indexOf('/', url.indexOf('/', 29)+1))
+    }
+    commits.map(x => (getRepo(x.url),(1L, List(x.commit.author.name)))).reduceByKey((x,y)=>(x._1 + y._1:Long, x._2.union(y._2)))
+      .map(x => (x._1, x._2._1, x._2._2.distinct))
+  }
 
   /**
     * Return an RDD of Tuples containing the repository name and all the files that are contained in this repository.
@@ -169,7 +188,12 @@ object RDDAssignment {
     * @param commits RDD containing commit data.
     * @return RDD containing the files in each repository as described above.
     */
-  def assignment_8(commits: RDD[Commit]): RDD[(String, Iterable[File])] = ???
+  def assignment_8(commits: RDD[Commit]): RDD[(String, Iterable[File])] = {
+    def getRepo(url: String): String = {
+      url.substring(url.indexOf('/', 29)+1,url.indexOf('/', url.indexOf('/', 29)+1))
+    }
+    commits.map(x => (getRepo(x.url),x.files)).reduceByKey((x,y) => x.union(y).distinct).map(identity)
+  }
 
 
   /**
@@ -183,7 +207,9 @@ object RDDAssignment {
     * @return RDD containing Tuples representing a file name, its corresponding commit SHA's and a Stats object
     *         representing the total aggregation of changes for a file.
     */
-  def assignment_9(commits: RDD[Commit], repository: String): RDD[(String, Seq[String], Stats)] = ???
+  def assignment_9(commits: RDD[Commit], repository: String): RDD[(String, Seq[String], Stats)] = {
+
+  }
 
   /**
     * We want to generate an overview of the work done by a user per repository. For this we want an RDD containing
