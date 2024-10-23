@@ -1,6 +1,7 @@
 package DataFrameAssignment
 
-import org.apache.spark.sql.functions.{col, lit, to_timestamp}
+import org.apache.spark.sql.expressions.Window
+import org.apache.spark.sql.functions.{col, datediff, dayofweek, dayofyear, from_unixtime, lag, lit, to_timestamp, unix_timestamp, when, year}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import java.sql.{Date, Timestamp}
@@ -155,7 +156,33 @@ object DFAssignment {
     * @param authorName Name of the author for which the result must be generated.
     * @return DataFrame with an appended column expressing the number of days since last commit, for the given user.
     */
-  def assignment_15(commits: DataFrame, authorName: String): DataFrame = ???
+  def assignment_15(commits: DataFrame, authorName: String): DataFrame = {
+
+//    val spark: SparkSession = SparkSession
+//      .builder
+//      .config("spark.driver.host", "localhost")
+//      .appName("Spark-Assignment")
+//      .master("local[*]")
+//      .getOrCreate()
+//    import spark.implicits._
+
+    val windowSpec = Window.orderBy("date")
+
+
+    val dfWithDates = commits.filter(commits("commit.committer").getField("name") === authorName)
+      .withColumn("date", to_timestamp(col("commit.committer.date")))
+      .select("_id", "commit.committer.name", "date")
+      .toDF("$oid", "name", "date")
+      .sort("date")
+      .withColumn("prevDate", lag("date", 1).over(windowSpec))
+
+    val withDiff = dfWithDates.withColumn("time_diff", datediff(dfWithDates("date"), dfWithDates("prevDate")))
+
+    withDiff.withColumn("time_diff",
+        when(col("prevDate").isNull, 0)
+          .otherwise(col("time_diff")))
+      .select("$oid", "name", "date", "time_diff")
+  }
 
   /**
     * To get a bit of insight into the spark SQL and its aggregation functions, you will have to implement a function
@@ -174,7 +201,11 @@ object DFAssignment {
     * @return DataFrame containing a `day` column and a `commits_per_day` column representing the total number of
     *         commits that have been made on that week day.
     */
-  def assignment_16(commits: DataFrame): DataFrame = ???
+  def assignment_16(commits: DataFrame): DataFrame = {
+    commits.select("commit.committer.date")
+      .withColumn("day", dayofweek(col("date")))
+      .groupBy("day").count()
+  }
 
   /**
     * Commits can be uploaded on different days. We want to get insight into the difference in commit time of the author and
@@ -194,7 +225,17 @@ object DFAssignment {
     * @return the original DataFrame with an appended column `commit_time_diff`, containing the time difference
     *         (in number of seconds) between authorizing and committing.
     */
-  def assignment_17(commits: DataFrame): DataFrame = ???
+  def assignment_17(commits: DataFrame): DataFrame = {
+    commits.withColumn("commitTime", unix_timestamp(to_timestamp(col("commit.committer.date"))))
+      .withColumn("authorTime", unix_timestamp(to_timestamp(col("commit.author.date"))))
+//      .withColumn("commit_time_diff",
+//        when(col("authorTime").isNull, 0)
+//          .otherwise(unix_timestamp(col("commitTime") - unix_timestamp(col("authorTime")))))
+      .withColumn("commit_time_diff", col("commitTime") - col("authorTime"))
+      .drop("authorTime", "commitTime")
+//      .show(10)
+//    commits
+  }
 
   /**
     * Using DataFrames, find all the commit SHA's from which a branch has been created, including the number of
