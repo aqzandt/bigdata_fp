@@ -1,10 +1,12 @@
 package RDDAssignment
 
+import org.apache.commons.math3.geometry.spherical.twod.Vertex
 import org.apache.spark.{Partition, TaskContext}
 
 import java.util.UUID
 import java.math.BigInteger
 import java.security.MessageDigest
+import org.apache.spark.graphx.{Edge, Graph}
 import org.apache.spark.graphx.{Edge, Graph, VertexId}
 import org.apache.spark.rdd.RDD
 import shapeless.syntax.std.tuple.productTupleOps
@@ -86,7 +88,7 @@ object RDDAssignment {
     */
   def assignment_4(commits: RDD[Commit], users: List[String]): RDD[(String, Stats)] = {
 
-    def combineOptionalStats(stats1: Option[Stats], stats2: Option[Stats]): Stats = {
+    def combineOptionStats(stats1: Option[Stats], stats2: Option[Stats]): Stats = {
       if(stats1.isEmpty) {
         if(stats2.isEmpty) Stats(total = 0, additions = 0, deletions = 0)
         else Stats(total = stats2.get.total, additions = stats2.get.additions, deletions = stats2.get.deletions)
@@ -223,7 +225,7 @@ object RDDAssignment {
     */
   def assignment_9(commits: RDD[Commit], repository: String): RDD[(String, Seq[String], Stats)] = {
     def getRepo(url: String): String = {
-      url.substring(url.indexOf('/', 29)+1,url.indexOf('/', url.indexOf('/', 29)+1))
+      url.substring(url.indexOf('/', 29) + 1, url.indexOf('/', url.indexOf('/', 29) + 1))
     }
 
     def combineStats(stats1: Stats, stats2: Stats): Stats = {
@@ -232,12 +234,13 @@ object RDDAssignment {
       )
     }
 
-    commits.filter(x => getRepo(x.url).equals(repository))
-      .map(x => x.files).flatMap(identity).map(x => (x.filename.getOrElse(""),(Seq(x.sha.getOrElse("")),
-        Stats(x.additions+x.deletions,x.additions,x.deletions))))
-      .reduceByKey((x,y) => (x._1 ++ y._1, combineStats(x._2, y._2)))
-      .map(x => (x._1,x._2._1,x._2._2))
-
+    commits
+      .filter(x => getRepo(x.url)
+        .equals(repository))
+      .flatMap(x => x.files.map(file => (file.filename, (Seq(x.sha), Stats(file.changes, file.additions, file.deletions)))))
+      .reduceByKey((x, y) => (x._1 ++ y._1, combineStats(x._2, y._2)))
+      .filter(x => x._1.isDefined)
+      .map(x => (x._1.get, x._2._1, x._2._2))
   }
 
   /**

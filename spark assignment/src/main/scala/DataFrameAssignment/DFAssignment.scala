@@ -1,11 +1,9 @@
 package DataFrameAssignment
 
-import java.sql.{Date, Timestamp}
+import org.apache.spark.sql.functions.{col, lit, to_timestamp}
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.spark.sql.functions.{col, datediff, lit, substring, to_timestamp, udf}
-import org.json4s.DateFormat
 
-import java.text.SimpleDateFormat
+import java.sql.{Date, Timestamp}
 
 /**
   * Please read the comments carefully, as they describe the expected result and may contain hints in how
@@ -36,6 +34,15 @@ object DFAssignment {
   def assignment_12(commits: DataFrame, authors: Seq[String]): DataFrame = {
     commits.select("commit.committer.name", "sha", "commit.committer.date").toDF("committer", "sha", "timestamp").sort(col("timestamp"))
       .filter(x => authors.contains(x.getString(0)))
+
+//    println(commits.schema)
+//    commits.select("commit.committer.name", "sha", "commit.committer.date")
+//      .filter(
+//        commits("commit.committer.name")
+//          .isin(authors: _*))
+//      .sort("commit.committer.date")
+//      .withColumnRenamed("commit.committer.name", "committer")
+//      .withColumnRenamed("date", "timestamp")
   }
 
   /**
@@ -71,6 +78,25 @@ object DFAssignment {
         ,Date.valueOf(x.getString(1).substring(0,10)).toLocalDate.getDayOfYear/7+1
         ,Date.valueOf(x.getString(1).substring(0,10)).toLocalDate.getYear))
       .groupBy("_1", "_2", "_3").count().toDF("repository", "week", "year", "count")
+
+    //    // Extract the repository name from the URL (assuming the repository name follows the structure like "owner/repo")
+    //    val extractRepoName = commits
+    //      .withColumn("repository", substring_index(substring_index(commits("url"), "/", 5), "/", -1))
+    //
+    //    // Extract the year and week from the commit date (assuming the commit date is in a standard timestamp format)
+    //    val extractYearAndWeek = extractRepoName
+    //      .withColumn("commit_date", to_date(extractRepoName("commit.committer.date")))
+    //      .withColumn("year", year(extractRepoName("commit.committer.date")))
+    //      .withColumn("week", weekofyear(extractRepoName("commit.committer.date")))
+    //
+    //    // Group by repository, year, and week, and count the number of commits per group
+    //    val weeklyCommitCounts = extractYearAndWeek
+    //      .groupBy("repository", "week", "year")
+    //      .agg(functions.count("*").as("count"))
+    //
+    //    // Return the resulting DataFrame with the desired columns
+    //    weeklyCommitCounts.filter(weeklyCommitCounts("repository") === "DrTests").show(10)
+    //    weeklyCommitCounts
   }
 
   /**
