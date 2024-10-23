@@ -304,6 +304,6 @@ object DFAssignment {
     children.createOrReplaceTempView("children")
     spark.sql("SELECT parents.repo_name AS repo_name, children.repo_name AS child_repo_name," +
       "children.parent_sha AS parent_sha, children.sha AS child_sha" +
-      " FROM children INNER JOIN parents ON children.parent_sha=parents.sha").filter(x => !x.getString(0).equals(x.getString(1)))
+      " FROM children INNER JOIN parents ON children.parent_sha=parents.sha").filter(x => !x.getString(0).equals(x.getString(1))).distinct()
   }
 }
