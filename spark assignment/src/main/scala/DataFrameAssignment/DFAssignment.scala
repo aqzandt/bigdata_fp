@@ -1,10 +1,15 @@
 package DataFrameAssignment
 
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions.{col, datediff, dayofweek, dayofyear, explode, from_unixtime, lag, lit, to_timestamp, unix_timestamp, when, year}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.functions.{col, datediff, dayofweek, dayofyear, from_unixtime, lag, lit, to_timestamp, unix_timestamp, when, year}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import utils.Parent
 
-import java.sql.{Date, Timestamp}
+import java.sql.{Date, Struct, Timestamp}
+import scala.collection.mutable
 
 /**
   * Please read the comments carefully, as they describe the expected result and may contain hints in how
@@ -326,5 +331,27 @@ object DFAssignment {
     * @return DataFrame containing the parent and child repository names, the SHA of the commit from which a new fork
     *         has been created and the SHA of the first commit in the fork repository
     */
-  def assignment_19(commits: DataFrame): DataFrame = ???
+  def assignment_19(commits: DataFrame): DataFrame = {
+    val spark: SparkSession = SparkSession
+      .builder
+      .config("spark.driver.host", "localhost")
+      .appName("Spark-Assignment")
+      .master("local[*]")
+      .getOrCreate()
+    import spark.implicits._
+
+    def getFullRepo(url: String): String = {
+      url.substring(29,url.indexOf('/', url.indexOf('/', 29)+1))
+    }
+    val data = commits.select("url","commit.committer.date", "sha", "parents.sha")
+      .as[(String, String, String, Array[String])].map(x => x._4.map(y => (x._1,x._2,x._3,y)))
+      .flatMap(x => x)
+    val parents = data.map(x => (getFullRepo(x._1),x._3)).toDF("repo_name", "sha")
+    val children = data.map(x => (getFullRepo(x._1), x._3,x._4)).toDF("repo_name", "sha", "parent_sha")
+    parents.createOrReplaceTempView("parents")
+    children.createOrReplaceTempView("children")
+    spark.sql("SELECT parents.repo_name AS repo_name, children.repo_name AS child_repo_name," +
+      "children.parent_sha AS parent_sha, children.sha AS child_sha" +
+      " FROM children INNER JOIN parents ON children.parent_sha=parents.sha").filter(x => !x.getString(0).equals(x.getString(1))).distinct()
+  }
 }
