@@ -1,14 +1,16 @@
 package RDDAssignment
 
+import org.apache.commons.math3.geometry.spherical.twod.Vertex
 import org.apache.spark.{Partition, TaskContext}
 
 import java.util.UUID
 import java.math.BigInteger
 import java.security.MessageDigest
-import org.apache.spark.graphx.Graph
+import org.apache.spark.graphx.{Edge, Graph}
 import org.apache.spark.rdd.RDD
 import shapeless.syntax.std.tuple.productTupleOps
 import utils.{Commit, File, Stats}
+
 
 object RDDAssignment {
 
@@ -84,7 +86,7 @@ object RDDAssignment {
     */
   def assignment_4(commits: RDD[Commit], users: List[String]): RDD[(String, Stats)] = {
 
-    def combineOptionalStats(stats1: Option[Stats], stats2: Option[Stats]): Stats = {
+    def combineOptionStats(stats1: Option[Stats], stats2: Option[Stats]): Stats = {
       if(stats1.isEmpty) {
         if(stats2.isEmpty) Stats(total = 0, additions = 0, deletions = 0)
         else Stats(total = stats2.get.total, additions = stats2.get.additions, deletions = stats2.get.deletions)
@@ -208,7 +210,23 @@ object RDDAssignment {
     *         representing the total aggregation of changes for a file.
     */
   def assignment_9(commits: RDD[Commit], repository: String): RDD[(String, Seq[String], Stats)] = {
+    def getRepo(url: String): String = {
+      url.substring(url.indexOf('/', 29) + 1, url.indexOf('/', url.indexOf('/', 29) + 1))
+    }
 
+    def combineStats(stats1: Stats, stats2: Stats): Stats = {
+      Stats(
+        total = stats1.total + stats2.total, additions = stats1.additions + stats2.additions, deletions = stats1.deletions + stats2.deletions
+      )
+    }
+
+    commits
+      .filter(x => getRepo(x.url)
+        .equals(repository))
+      .flatMap(x => x.files.map(file => (file.filename, (Seq(x.sha), Stats(file.changes, file.additions, file.deletions)))))
+      .reduceByKey((x, y) => (x._1 ++ y._1, combineStats(x._2, y._2)))
+      .filter(x => x._1.isDefined)
+      .map(x => (x._1.get, x._2._1, x._2._2))
   }
 
   /**
@@ -223,7 +241,29 @@ object RDDAssignment {
     * @return RDD containing Tuples of the committer's name, the repository name and an `Option[Stat]` object representing additions,
     *         deletions and the total contribution to this repository by this committer.
     */
-  def assignment_10(commits: RDD[Commit]): RDD[(String, String, Option[Stats])] = ???
+  def assignment_10(commits: RDD[Commit]): RDD[(String, String, Option[Stats])] = {
+    def getRepo(url: String): String = {
+      url.substring(url.indexOf('/', 29) + 1, url.indexOf('/', url.indexOf('/', 29) + 1))
+    }
+
+    def combineOptionStats(stats1: Option[Stats], stats2: Option[Stats]): Option[Stats] = {
+      if (stats1.isEmpty) {
+        if (stats2.isEmpty) None
+        else Some(Stats(total = stats2.get.total, additions = stats2.get.additions, deletions = stats2.get.deletions))
+      }
+      else {
+        if (stats2.isEmpty) Some(Stats(total = stats1.get.total, additions = stats1.get.additions, deletions = stats1.get.deletions))
+        else Some(Stats(
+          total = stats1.get.total + stats2.get.total, additions = stats1.get.additions + stats2.get.additions, deletions = stats1.get.deletions + stats2.get.deletions
+        ))
+      }
+    }
+
+    commits
+      .map(x => ((x.commit.committer.name, getRepo(x.url)), x.stats))
+      .reduceByKey((x, y) => combineOptionStats(x, y))
+      .map(x => (x._1._1, x._1._2, x._2))
+  }
 
 
   /**
@@ -260,5 +300,23 @@ object RDDAssignment {
     * @param commits RDD containing commit data.
     * @return Graph representation of the commits as described above.
     */
-  def assignment_11(commits: RDD[Commit]): Graph[(String, String), String] = ???
+  def assignment_11(commits: RDD[Commit]): Graph[(String, String), String] = {
+    def getRepo(url: String): String = {
+      url.substring(29, url.indexOf('/', url.indexOf('/', 29) + 1))
+    }
+
+    def getOwner(url: String): String = {
+      url.substring(29, url.indexOf('/', 29))
+    }
+
+    commits
+      .map(x => (getRepo(x.url), x.url)).collect().foreach(println)
+
+    val repos = commits
+      .map(x => (md5HashString(getRepo(x.url)), (getRepo(x.url) , "repository")))
+    val committers = commits.map(x => (md5HashString(x.commit.committer.name), x.commit.committer.name)).map(x => (x._1, (x._2, "developer"))).distinct
+    val vertices = (repos ++ committers).distinct
+    val edges = commits.map(x => Edge(md5HashString(x.commit.committer.name), md5HashString(getRepo(x.url)), "")).distinct
+    Graph(vertices, edges)
+  }
 }
