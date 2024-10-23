@@ -5,10 +5,12 @@ import org.apache.spark.{Partition, TaskContext}
 import java.util.UUID
 import java.math.BigInteger
 import java.security.MessageDigest
-import org.apache.spark.graphx.Graph
+import org.apache.spark.graphx.{Edge, Graph, VertexId}
 import org.apache.spark.rdd.RDD
 import shapeless.syntax.std.tuple.productTupleOps
 import utils.{Commit, File, Stats}
+
+import java.sql.Timestamp
 
 object RDDAssignment {
 
@@ -148,8 +150,12 @@ object RDDAssignment {
     */
   def assignment_6(commits: RDD[Commit]): RDD[(String, (Int, Int))] = {
     def countReverts(message: String): Int = {
-      if (message.startsWith("Revert \"")) 1 + countReverts(message.substring(8)) else
-      if (message.startsWith("Revert ")) 1 + countReverts(message.substring(7)) else 0
+      val messageProcessed = message.toLowerCase().replaceAll("[^a-z]", "");
+      if (messageProcessed.startsWith("revert")) {
+        val newMessage = messageProcessed.substring(6)
+        return 1 + countReverts(newMessage)
+      }
+      0
     }
     commits.map(x => (x.commit.author.name, countReverts(x.commit.message))).map(x => (x,1)).reduceByKey((x,y) => x+y)
       .map(x => (x._1._1,(x._1._2,x._2))).reduceByKey((x,y) => if (x._1>y._1) x else y).filter(x => x._2._1 != 0)
@@ -170,11 +176,15 @@ object RDDAssignment {
     *         well as the names of the unique committers to this repository.
     */
   def assignment_7(commits: RDD[Commit]): RDD[(String, Long, Iterable[String])] = {
-    def getRepo(url: String): String = {
-      url.substring(url.indexOf('/', 29)+1,url.indexOf('/', url.indexOf('/', 29)+1))
+    def getFullRepo(url: String): String = {
+      url.substring(29,url.indexOf('/', url.indexOf('/', 29)+1))
     }
-    commits.map(x => (getRepo(x.url),(1L, List(x.commit.author.name)))).reduceByKey((x,y)=>(x._1 + y._1:Long, x._2.union(y._2)))
-      .map(x => (x._1, x._2._1, x._2._2.distinct))
+    def shortenRepo(url: String): String = {
+      url.substring(url.indexOf('/')+1)
+    }
+
+    commits.map(x => (getFullRepo(x.url),(1L, List(x.commit.committer.name)))).reduceByKey((x,y)=>(x._1 + y._1:Long, x._2.union(y._2)))
+      .map(x => (shortenRepo(x._1), x._2._1, x._2._2.distinct))
   }
 
   /**
@@ -192,7 +202,11 @@ object RDDAssignment {
     def getRepo(url: String): String = {
       url.substring(url.indexOf('/', 29)+1,url.indexOf('/', url.indexOf('/', 29)+1))
     }
-    commits.map(x => (getRepo(x.url),x.files)).reduceByKey((x,y) => x.union(y).distinct).map(identity)
+
+    commits.flatMap(x => x.files.map(y => ((getRepo(x.url), y.filename), (y,x.commit.committer.date))))
+      .reduceByKey((x,y) => if (x._2.getTime > y._2.getTime) x else y)
+      .map(x => (x._1._1,List(x._2._1)))
+      .reduceByKey((x,y) => x.union(y)).map(identity)
   }
 
 
@@ -208,6 +222,21 @@ object RDDAssignment {
     *         representing the total aggregation of changes for a file.
     */
   def assignment_9(commits: RDD[Commit], repository: String): RDD[(String, Seq[String], Stats)] = {
+    def getRepo(url: String): String = {
+      url.substring(url.indexOf('/', 29)+1,url.indexOf('/', url.indexOf('/', 29)+1))
+    }
+
+    def combineStats(stats1: Stats, stats2: Stats): Stats = {
+      Stats(
+        total = stats1.total + stats2.total, additions = stats1.additions + stats2.additions, deletions = stats1.deletions + stats2.deletions
+      )
+    }
+
+    commits.filter(x => getRepo(x.url).equals(repository))
+      .map(x => x.files).flatMap(identity).map(x => (x.filename.getOrElse(""),(Seq(x.sha.getOrElse("")),
+        Stats(x.additions+x.deletions,x.additions,x.deletions))))
+      .reduceByKey((x,y) => (x._1 ++ y._1, combineStats(x._2, y._2)))
+      .map(x => (x._1,x._2._1,x._2._2))
 
   }
 
@@ -223,7 +252,23 @@ object RDDAssignment {
     * @return RDD containing Tuples of the committer's name, the repository name and an `Option[Stat]` object representing additions,
     *         deletions and the total contribution to this repository by this committer.
     */
-  def assignment_10(commits: RDD[Commit]): RDD[(String, String, Option[Stats])] = ???
+  def assignment_10(commits: RDD[Commit]): RDD[(String, String, Option[Stats])] = {
+    def getRepo(url: String): String = {
+      url.substring(url.indexOf('/', 29)+1,url.indexOf('/', url.indexOf('/', 29)+1))
+    }
+
+    def combineOptionalStats(stats1: Option[Stats], stats2: Option[Stats]): Option[Stats] = {
+      if(stats1.isEmpty) {
+        if(stats2.isEmpty) None else stats2
+      }
+      if(stats2.isEmpty) stats1
+      else Option(Stats(total = stats1.get.total + stats2.get.total, additions = stats1.get.additions + stats2.get.additions, deletions = stats1.get.deletions + stats2.get.deletions))
+    }
+
+    commits.map(x => ((x.commit.committer.name,getRepo(x.url)),x.stats))
+      .reduceByKey((x,y) => combineOptionalStats(x,y))
+      .map(x => (x._1._1, x._1._2, x._2))
+  }
 
 
   /**
@@ -260,5 +305,17 @@ object RDDAssignment {
     * @param commits RDD containing commit data.
     * @return Graph representation of the commits as described above.
     */
-  def assignment_11(commits: RDD[Commit]): Graph[(String, String), String] = ???
+  def assignment_11(commits: RDD[Commit]): Graph[(String, String), String] = {
+    def getRepo(url: String): String = {
+      url.substring(29,url.indexOf('/', url.indexOf('/', 29)+1))
+    }
+
+    val committers = commits.map(x => x.commit.committer.name).map(x => (x, "developer")).distinct()
+    val repos = commits.map(x => getRepo(x.url)).map(x => (x, "repository")).distinct()
+    val vertices = (repos ++ committers).map(x => (md5HashString(x._1):VertexId,(x._1, x._2)))
+    val relations = commits.map(x => (x.commit.committer.name,getRepo(x.url))).distinct()
+      .map(x => (md5HashString(x._1):VertexId, md5HashString(x._2):VertexId))
+    val edges = relations.map(x => Edge(x._1, x._2, ""))
+    Graph(vertices, edges)
+  }
 }
