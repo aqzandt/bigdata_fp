@@ -1,8 +1,11 @@
 package DataFrameAssignment
 
-import java.sql.Timestamp
+import jdk.nashorn.internal.objects.NativeString.substring
 
-import org.apache.spark.sql.DataFrame
+import java.sql.Timestamp
+import org.apache.spark.sql.{DataFrame, functions}
+import org.apache.spark.sql.catalyst.dsl.expressions.StringToAttributeConversionHelper
+import org.apache.spark.sql.functions.{instr, substring, substring_index, to_date, weekofyear, year}
 
 /**
   * Please read the comments carefully, as they describe the expected result and may contain hints in how
@@ -30,7 +33,16 @@ object DFAssignment {
     *                SHA's.
     * @return DataFrame of commits from the requested authors, including the commit SHA and the according timestamp.
     */
-  def assignment_12(commits: DataFrame, authors: Seq[String]): DataFrame = ???
+  def assignment_12(commits: DataFrame, authors: Seq[String]): DataFrame = {
+    println(commits.schema)
+    commits.select("commit.committer.name", "sha", "commit.committer.date")
+      .filter(
+        commits("commit.committer.name")
+          .isin(authors: _*))
+      .sort("commit.committer.date")
+      .withColumnRenamed("commit.committer.name", "committer")
+      .withColumnRenamed("date", "timestamp")
+  }
 
   /**
     * In order to generate weekly dashboards for all projects, we need the data to be partitioned by weeks. As projects
@@ -48,7 +60,26 @@ object DFAssignment {
     * @return DataFrame containing 4 columns: repository name, week number, year and the number of commits for that
     *         week.
     */
-  def assignment_13(commits: DataFrame): DataFrame = ???
+  def assignment_13(commits: DataFrame): DataFrame = ??? //{
+//    // Extract the repository name from the URL (assuming the repository name follows the structure like "owner/repo")
+//    val extractRepoName = commits
+//      .withColumn("repository", substring_index(substring_index(commits("url"), "/", 5), "/", -1))
+//
+//    // Extract the year and week from the commit date (assuming the commit date is in a standard timestamp format)
+//    val extractYearAndWeek = extractRepoName
+//      .withColumn("commit_date", to_date(extractRepoName("commit.committer.date")))
+//      .withColumn("year", year(extractRepoName("commit.committer.date")))
+//      .withColumn("week", weekofyear(extractRepoName("commit.committer.date")))
+//
+//    // Group by repository, year, and week, and count the number of commits per group
+//    val weeklyCommitCounts = extractYearAndWeek
+//      .groupBy("repository", "week", "year")
+//      .agg(functions.count("*").as("count"))
+//
+//    // Return the resulting DataFrame with the desired columns
+//    weeklyCommitCounts.filter(weeklyCommitCounts("repository") === "DrTests").show(10)
+//    weeklyCommitCounts
+//  }
 
   /**
     * A developer is interested in the age of commits in seconds. Although this is something that can always be
