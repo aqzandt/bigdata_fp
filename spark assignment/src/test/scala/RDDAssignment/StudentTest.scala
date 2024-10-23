@@ -102,9 +102,9 @@ class StudentTest extends FunSuite with BeforeAndAfterAll {
     val studentResult: RDD[(String, (Int, Int))] = RDDAssignment.assignment_6(commitRDD.sample(false, 0.5, 0L))
     val expectedSet = Set(("Oscar Näzell", (2, 1)), ("DMEdesignmyeye", (2, 1)), ("zebbykhairah", (1, 1)),
       ("sayan7848", (1, 2)), ("Max Stewart", (1, 1)), ("Yehuda Alkalay", (1, 1)), ("Aleksander Andresen", (1, 1)),
-      ("joshuous", (1, 1)), ("jalalirs", (1, 1)), ("steverendell", (1, 1)))
+      ("joshuous", (1, 1)), ("jalalirs", (1, 1)), ("steverendell", (1, 1))).toList.sorted
     assertResult(expectedSet) {
-      studentResult.collect().toSet
+      studentResult.collect().toSet.toList.sorted
     }
   }
 
