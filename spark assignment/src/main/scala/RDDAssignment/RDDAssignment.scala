@@ -152,9 +152,10 @@ object RDDAssignment {
     */
   def assignment_6(commits: RDD[Commit]): RDD[(String, (Int, Int))] = {
     def countReverts(message: String): Int = {
-      val messageProcessed = message.toLowerCase().replaceAll("[^a-z]", "");
-      if (messageProcessed.startsWith("revert")) {
-        val newMessage = messageProcessed.substring(6)
+      //val messageProcessed = message.toLowerCase().replaceAll("[^a-z]", "");
+      if (message.startsWith("Revert")) {
+        //println(message)
+        val newMessage = message.substring(8)
         return 1 + countReverts(newMessage)
       }
       0
