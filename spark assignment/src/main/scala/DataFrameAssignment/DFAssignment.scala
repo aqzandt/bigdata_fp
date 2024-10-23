@@ -1,8 +1,11 @@
 package DataFrameAssignment
 
-import java.sql.Timestamp
+import java.sql.{Date, Timestamp}
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.functions.{col, datediff, lit, substring, to_timestamp, udf}
+import org.json4s.DateFormat
 
-import org.apache.spark.sql.DataFrame
+import java.text.SimpleDateFormat
 
 /**
   * Please read the comments carefully, as they describe the expected result and may contain hints in how
@@ -30,7 +33,10 @@ object DFAssignment {
     *                SHA's.
     * @return DataFrame of commits from the requested authors, including the commit SHA and the according timestamp.
     */
-  def assignment_12(commits: DataFrame, authors: Seq[String]): DataFrame = ???
+  def assignment_12(commits: DataFrame, authors: Seq[String]): DataFrame = {
+    commits.select("commit.committer.name", "sha", "commit.committer.date").toDF("committer", "sha", "timestamp").sort(col("timestamp"))
+      .filter(x => authors.contains(x.getString(0)))
+  }
 
   /**
     * In order to generate weekly dashboards for all projects, we need the data to be partitioned by weeks. As projects
@@ -48,7 +54,24 @@ object DFAssignment {
     * @return DataFrame containing 4 columns: repository name, week number, year and the number of commits for that
     *         week.
     */
-  def assignment_13(commits: DataFrame): DataFrame = ???
+  def assignment_13(commits: DataFrame): DataFrame = {
+    val spark: SparkSession = SparkSession
+      .builder
+      .config("spark.driver.host", "localhost")
+      .appName("Spark-Assignment")
+      .master("local[*]")
+      .getOrCreate()
+    import spark.implicits._
+
+    def getRepo(url: String): String = {
+      url.substring(url.indexOf('/', 29)+1,url.indexOf('/', url.indexOf('/', 29)+1))
+    }
+    commits.select("url", "commit.committer.date")
+      .map(x => (getRepo(x.getString(0))
+        ,Date.valueOf(x.getString(1).substring(0,10)).toLocalDate.getDayOfYear/7+1
+        ,Date.valueOf(x.getString(1).substring(0,10)).toLocalDate.getYear))
+      .groupBy("_1", "_2", "_3").count().toDF("repository", "week", "year", "count")
+  }
 
   /**
     * A developer is interested in the age of commits in seconds. Although this is something that can always be
@@ -68,7 +91,20 @@ object DFAssignment {
     * @param commits Commit DataFrame, created from the data_raw.json file.
     * @return the input DataFrame with the appended `age` column.
     */
-  def assignment_14(commits: DataFrame, snapShotTimestamp: Timestamp): DataFrame = ???
+  def assignment_14(commits: DataFrame, snapShotTimestamp: Timestamp): DataFrame = {
+    val spark: SparkSession = SparkSession
+      .builder
+      .config("spark.driver.host", "localhost")
+      .appName("Spark-Assignment")
+      .master("local[*]")
+      .getOrCreate()
+
+    commits.withColumn("date", to_timestamp(col("commit.committer.date")))
+      .withColumn("timeNow",lit(snapShotTimestamp))
+      .createOrReplaceTempView("commits")
+
+    spark.sqlContext.sql("SELECT *, (unix_timestamp(timeNow)-unix_timestamp(date)) AS age FROM commits").drop("date").drop("timeNow")
+  }
 
   /**
     * To perform the analysis on commit behavior, the intermediate time of commits is needed. We require that the DataFrame
