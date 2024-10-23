@@ -1,8 +1,8 @@
 package DataFrameAssignment
 
 import org.apache.spark.sql.expressions.Window
-import org.apache.spark.sql.functions.{col, datediff, dayofweek, dayofyear, from_unixtime, lag, lit, to_timestamp, unix_timestamp, when, year}
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.functions.{col, datediff, dayofweek, dayofyear, explode, from_unixtime, lag, lit, to_timestamp, unix_timestamp, when, year}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 import java.sql.{Date, Timestamp}
 
@@ -256,7 +256,53 @@ object DFAssignment {
     * @return DataFrame containing the commit SHAs from which at least one new branch has been created, and the actual
     *         number of created branches
     */
-  def assignment_18(commits: DataFrame): DataFrame = ???
+  def assignment_18(commits: DataFrame): DataFrame = {
+    val spark = SparkSession.builder()
+      .appName("FlatMap Example")
+      .master("local[*]")
+      .getOrCreate()
+
+    import spark.implicits._
+
+    val shaValues = commits.select("sha").distinct().collect().map { row: Row =>
+      row.getAs[String]("sha") // Extracting the "sha" as a String
+    }
+
+    commits.select("sha", "parents")
+      //.filter(!col("parents").isNull)
+      .withColumn("parent_sha", explode(col("parents")))
+      .withColumn("parent", col("parent_sha").getField("sha"))
+      .select("parent", "sha")
+      .filter(col("parent").isInCollection(shaValues))
+      .filter(row => !row.getString(0).equals(row.getString(1)))
+      .withColumnRenamed("sha", "child")
+      .withColumnRenamed("parent", "sha")
+      .groupBy(col("sha")).count()
+      .withColumnRenamed("count", "times_parent")
+      .filter(col("times_parent") > 1)
+      //.sort("times_parent")
+      //.show(10)
+
+//    // Step 1: Extract SHA values and parent SHA values
+//    // Explode the "parents" column (which contains lists of parent SHAs)
+//    val explodedCommits = commits
+//      .select(col("sha"), explode(col("parents")).alias("parent_sha"))
+//
+//    // Step 2: Filter parent SHAs to include only SHAs that are also present in the DataFrame as commit SHAs
+//    val shaValues = commits.select("sha").distinct()
+//
+//    // Step 3: Group by the parent SHA and count how many times it appears (this indicates the number of branches created from it)
+//    val branchesCount = explodedCommits
+//      .join(shaValues.withColumnRenamed("sha", "sha_value"), explodedCommits("parent_sha") === shaValues("sha"))
+//      .groupBy("parent_sha").count()
+//      //.agg(count("*").alias("times_parent"))
+//
+//    // Step 4: Return the result as a DataFrame with the correct column names
+//    branchesCount
+//      .select(col("parent_sha").alias("sha"), col("times_parent")).show(10)
+
+    //commits
+  }
 
   /**
     * In the given commit DataFrame, find all commits from which a fork has been created. We are interested in the names
