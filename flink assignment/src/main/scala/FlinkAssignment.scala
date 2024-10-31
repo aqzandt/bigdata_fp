@@ -5,8 +5,12 @@ import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
 import org.apache.flink.api.scala._
 import org.apache.flink.configuration.Configuration
+import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows
+import org.apache.flink.streaming.api.windowing.time.Time
 import util.Protocol.{Commit, CommitGeo, CommitSummary}
 import util.{CommitGeoParser, CommitParser}
+
+import java.util.Date
 
 
 
@@ -38,7 +42,7 @@ object FlinkAssignment {
         .map(new CommitGeoParser)
 
     /** Use the space below to print and test your questions. */
-    question_four(commitStream).print()
+    question_five(commitStream).print()
 
     /** Start the streaming environment. **/
     env.execute()
@@ -113,7 +117,17 @@ object FlinkAssignment {
     * Make use of a non-keyed window.
     * Output format: (date, count)
     */
-  def question_five(input: DataStream[Commit]): DataStream[(String, Int)] = ???
+  def question_five(input: DataStream[Commit]): DataStream[(String, Int)] = {
+    val formatter = new SimpleDateFormat("dd-MM-yyyy")
+    input//.map(x => (x.commit.committer.date, 1))
+      .assignAscendingTimestamps(_.commit.committer.date.getTime)
+      .map(x => (formatter.format(x.commit.committer.date), 1))
+//      .keyBy(_._1)
+//      .timeWindow(Time.days(1))
+      .windowAll(TumblingEventTimeWindows.of(Time.days(1)))
+      .reduce { (v1, v2) => (v1._1, v1._2 + v2._2) }
+      .map(x => (x._1.toString, x._2))
+  }
 
   /**
     * Consider two types of commits; small commits and large commits whereas small: 0 <= x <= 20 and large: x > 20 where x = total amount of changes.
