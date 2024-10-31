@@ -37,7 +37,7 @@ object FlinkAssignment {
         .map(new CommitGeoParser)
 
     /** Use the space below to print and test your questions. */
-    dummy_question(commitStream).print()
+    question_two(commitStream).print()
 
     /** Start the streaming environment. **/
     env.execute()
@@ -52,13 +52,17 @@ object FlinkAssignment {
     * Write a Flink application which outputs the sha of commits with at least 20 additions.
     * Output format: sha
     */
-  def question_one(input: DataStream[Commit]): DataStream[String] = ???
+  def question_one(input: DataStream[Commit]): DataStream[String] = {
+    input.filter(x => x.stats.isDefined && x.stats.get.additions >= 20).map(_.sha)
+  }
 
   /**
     * Write a Flink application which outputs the names of the files with more than 30 deletions.
     * Output format:  fileName
     */
-  def question_two(input: DataStream[Commit]): DataStream[String] = ???
+  def question_two(input: DataStream[Commit]): DataStream[String] = {
+    input.flatMap(_.files).filter(_.deletions > 30).filter(_.filename.isDefined).map(_.filename.get)
+  }
 
   /**
     * Count the occurrences of Java and Scala files. I.e. files ending with either .scala or .java.
