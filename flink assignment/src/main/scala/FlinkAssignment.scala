@@ -1,5 +1,6 @@
-import java.text.SimpleDateFormat
+import org.apache.flink.api.common.functions.FlatMapFunction
 
+import java.text.SimpleDateFormat
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
 import org.apache.flink.api.scala._
@@ -37,7 +38,7 @@ object FlinkAssignment {
         .map(new CommitGeoParser)
 
     /** Use the space below to print and test your questions. */
-    question_two(commitStream).print()
+    question_four(commitStream).print()
 
     /** Start the streaming environment. **/
     env.execute()
@@ -68,14 +69,44 @@ object FlinkAssignment {
     * Count the occurrences of Java and Scala files. I.e. files ending with either .scala or .java.
     * Output format: (fileExtension, #occurrences)
     */
-  def question_three(input: DataStream[Commit]): DataStream[(String, Int)] = ???
+  def question_three(input: DataStream[Commit]): DataStream[(String, Int)] = {
+    input.flatMap(_.files).filter(_.filename.isDefined).map(_.filename.get)
+      .map(name => {
+            // Get the index of the last . in the filename
+            val dotIndex = name.lastIndexOf(".")
+            // Extract the extension if present, otherwise assign "unknown"
+            if (dotIndex >= 0 && dotIndex < name.length - 1) {
+              name.substring(dotIndex + 1) // Get the file extension
+            } else {
+              "..." // No extension or invalid file name
+            }
+      })
+      .filter(x =>  x.equals("scala") || x.equals("java"))
+      .map(x => (x, 1))
+      .keyBy(_._1)
+      .sum(1)
+  }
 
   /**
     * Count the total amount of changes for each file status (e.g. modified, removed or added) for the following extensions: .js and .py.
     * Output format: (extension, status, count)
     */
   def question_four(
-      input: DataStream[Commit]): DataStream[(String, String, Int)] = ???
+      input: DataStream[Commit]): DataStream[(String, String, Int)] = {
+    input.flatMap(_.files).filter(_.filename.isDefined).filter(_.status.isDefined)
+      .map(file => {
+        val dotIndex = file.filename.get.lastIndexOf(".")
+        if (dotIndex >= 0 && dotIndex < file.filename.get.length - 1) {
+          ((file.filename.get.substring(dotIndex + 1), file.status.get), file.changes)
+        } else {
+          (("...", file.status.get), file.changes)
+        }
+      })
+      .filter(x => x._1._1.equals("js") || x._1._1.equals("py"))
+      .keyBy(_._1)
+      .sum(1)
+      .map(x => (x._1._1, x._1._2, x._2))
+  }
 
   /**
     * For every day output the amount of commits. Include the timestamp in the following format dd-MM-yyyy; e.g. (26-06-2019, 4) meaning on the 26th of June 2019 there were 4 commits.
