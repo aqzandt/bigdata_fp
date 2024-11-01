@@ -5,9 +5,9 @@ import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
 import org.apache.flink.api.scala._
 import org.apache.flink.configuration.Configuration
-import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows
+import org.apache.flink.streaming.api.windowing.assigners.{SlidingEventTimeWindows, TumblingEventTimeWindows}
 import org.apache.flink.streaming.api.windowing.time.Time
-import util.Protocol.{Commit, CommitGeo, CommitSummary}
+import util.Protocol.{Commit, CommitGeo, CommitSummary, File}
 import util.{CommitGeoParser, CommitParser}
 
 import java.util.Date
@@ -42,7 +42,7 @@ object FlinkAssignment {
         .map(new CommitGeoParser)
 
     /** Use the space below to print and test your questions. */
-    question_five(commitStream).print()
+    question_six(commitStream).print()
 
     /** Start the streaming environment. **/
     env.execute()
@@ -134,7 +134,21 @@ object FlinkAssignment {
     * Compute every 12 hours the amount of small and large commits in the last 48 hours.
     * Output format: (type, count)
     */
-  def question_six(input: DataStream[Commit]): DataStream[(String, Int)] = ???
+  def question_six(input: DataStream[Commit]): DataStream[(String, Int)] = {
+    def getTotalChanges(files: List[File]): Long = {
+      files.map(_.changes).sum
+    }
+
+    input
+      .assignAscendingTimestamps(_.commit.committer.date.getTime)
+      .map{x =>
+        if(getTotalChanges(x.files) <= 20) ("small", 1)
+        else ("large", 1)
+      }
+      .keyBy(_._1)
+      .window(SlidingEventTimeWindows.of(Time.hours(48), Time.hours(12)))
+      .reduce {(v1, v2) => (v1._1, v1._2 + v2._2)}
+  }
 
   /**
     * For each repository compute a daily commit summary and output the summaries with more than 20 commits and at most 2 unique committers. The CommitSummary case class is already defined.
