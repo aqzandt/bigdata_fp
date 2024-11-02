@@ -13,7 +13,7 @@ import org.apache.flink.streaming.api.windowing.assigners.{SlidingEventTimeWindo
 import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow
 import org.apache.flink.util.Collector
-import util.Protocol.{Commit, CommitGeo, CommitSummary, File}
+import util.Protocol.{Commit, CommitGeo, CommitSummary, File, Stats}
 import util.{CommitGeoParser, CommitParser}
 
 import java.util.Date
@@ -48,7 +48,7 @@ object FlinkAssignment {
         .map(new CommitGeoParser)
 
     /** Use the space below to print and test your questions. */
-    question_eight(commitStream, commitGeoStream).print()
+    question_eight(commitStream,commitGeoStream).print()
 
     /** Start the streaming environment. **/
     env.execute()
@@ -143,28 +143,16 @@ object FlinkAssignment {
     * Output format: (type, count)
     */
   def question_six(input: DataStream[Commit]): DataStream[(String, Int)] = {
-    def getTotalChanges(files: List[File]): Int = {
-      files.map(_.changes).sum
-    }
-
-//    class assignWatermark extends AssignerWithPunctuatedWatermarks[Commit]  {
-//      def checkAndGetNextWatermark(commit: Commit, l: Long): Watermark = null
-//      def extractTimestamp(commit: Commit, l: Long): Long = commit.commit.committer.date.getTime
-//    }
-
     input
       .assignAscendingTimestamps(_.commit.committer.date.getTime)
-      .map(x =>
-      {
-        val changes = getTotalChanges(x.files)
-        if (changes >= 0 && changes <= 20) ("small", 1)
-        else if (changes > 20) ("large", 1)
-        else ("small", 0)
-      }
-      )
+      .map(x => x.stats.get.total)
+      .map(x => {
+        if (x <= 20) ("small", 1)
+        else ("large", 1)
+      })
       .keyBy(_._1)
       .window(SlidingEventTimeWindows.of(Time.hours(48), Time.hours(12)))
-      .reduce {(v1, v2) => (v1._1, v1._2 + v2._2)}
+      .sum(1)
   }
 
   /**
@@ -183,35 +171,31 @@ object FlinkAssignment {
     * Output format: CommitSummary
     */
   def question_seven(
-      commitStream: DataStream[Commit]): DataStream[CommitSummary] = {
+                      commitStream: DataStream[Commit]): DataStream[CommitSummary] = {
 
     def getFullRepo(url: String): String = {
       url.substring(29,url.indexOf('/', url.indexOf('/', 29)+1))
     }
-    def getTotalChanges(files: List[File]): Int = {
-      files.map(_.changes).sum
-    }
+    class processCommitSummary extends ProcessWindowFunction[Commit, CommitSummary, String, TimeWindow] {
 
-    class processCommitSummary extends ProcessWindowFunction[(String, String, Int), CommitSummary, String, TimeWindow] {
-
-      def process(key: String, context: Context, elements: Iterable[(String, String, Int)], out: Collector[CommitSummary])  = {
+      def process(key: String, context: Context, elements: Iterable[Commit], out: Collector[CommitSummary])  = {
         val formatter = new SimpleDateFormat("dd-MM-yyyy")
         val date = formatter.format(context.window.getStart)
         val amountOfCommits = elements.size
-        val amountOfCommitters = elements.map(x => x._2).toList.distinct.size
-        val totalChanges = elements.map(x => x._3).sum
-        val commitCountsPerCommitter = elements.map(x => (x._2, x._3)).groupBy(x => x._1).map(x => (x._1,x._2.reduce((j,k) => (j._1,j._2 + k._2)))).map(x => (x._1, x._2._2))
-        val maxCommits = commitCountsPerCommitter.values.max
-        val topCommitter = commitCountsPerCommitter.filter(_._2 == maxCommits).keys.toList.sorted.mkString(",")
+        val amountOfCommitters = elements.map(x => x.commit.committer.name).toList.distinct.size
+        val totalChanges = elements.map(x => x.stats.getOrElse(Stats(0, 0, 0)).total).sum
+        val commitCountsPerCommitter = elements.map(x => (x.commit.committer.name, 1)).groupBy(x => x._1).map(x => (x._1, x._2.reduce((y, z) => (y._1, y._2 + z._2))))
+          .values
+        val maxCommits = commitCountsPerCommitter.map(_._2).max
+        val topCommitter = commitCountsPerCommitter.filter(_._2 == maxCommits).map(x=>x._1).toList.sorted.mkString(",")
         out.collect(CommitSummary(key, date, amountOfCommits, amountOfCommitters, totalChanges, topCommitter))
       }
     }
 
     commitStream
       .assignAscendingTimestamps(_.commit.committer.date.getTime)
-      .map(x => (getFullRepo(x.url),x.commit.committer.name,getTotalChanges(x.files)))
-      .keyBy(_._1)
-      .timeWindow(Time.hours(24))
+      .keyBy(x => getFullRepo(x.url))
+      .window(TumblingEventTimeWindows.of(Time.days(1)))
       .process(new processCommitSummary())
       .filter(x => x.amountOfCommits > 20 && x.amountOfCommitters <= 2)
   }
@@ -233,27 +217,41 @@ object FlinkAssignment {
 
     val SHAChanges = commitStream
       .assignAscendingTimestamps(_.commit.committer.date.getTime)
-      .map(x => (x.sha, x.files.filter(y => {
-        val fileName = y.filename.getOrElse("filtered")
-        val dotIndex = fileName.lastIndexOf(".")
-        dotIndex != -1 && fileName.substring(dotIndex).equals(".java")
-        }).map(y => y.changes).sum, x.commit.committer.date.getTime)) // (Commit SHA, .java changes) for every commit
+      .map(x => (x.sha, x.files.filter(y => y.filename.get.endsWith(".java")).map(y => y.changes).sum)) // (Commit SHA, .java changes) for every commit
       .keyBy(_._1)
 
-    geos
-      .intervalJoin(SHAChanges)
+    SHAChanges
+      .intervalJoin(geos)
       .between(Time.minutes(-60), Time.minutes(30))
-      .process(new ProcessJoinFunction[CommitGeo, (String, Int, Long), (String, Int, Long)] {
-        override def processElement(left: CommitGeo, right: (String, Int, Long), ctx: ProcessJoinFunction[CommitGeo,(String, Int, Long), (String, Int, Long)]#Context, out: Collector[(String, Int, Long)]): Unit = {
-          out.collect((left.continent,right._2,right._3))
+      .process(new ProcessJoinFunction[(String, Int), CommitGeo, (String, Int)] {
+        override def processElement(left: (String, Int), right: CommitGeo, ctx: ProcessJoinFunction[(String, Int),CommitGeo, (String, Int)]#Context, out: Collector[(String, Int)]): Unit = {
+          out.collect((right.continent, left._2))
         }
       })
-      .assignAscendingTimestamps(_._3)
       .map(x => (x._1, x._2))
       .keyBy(_._1)
-      .timeWindow(Time.days(7))
-      .reduce((x,y) => (x._1,x._2 + y._2))
+      .window(TumblingEventTimeWindows.of(Time.days(7)))
+      .sum(1)
+      .filter(x => x._2 != 0)
 
+//    val geos = geoStream.assignAscendingTimestamps(_.createdAt.getTime)
+//
+//    val SHAChanges = commitStream
+//      .assignAscendingTimestamps(_.commit.committer.date.getTime)
+//      .map(x => (x.sha, x.files.filter(y => {
+//        val fileName = y.filename.getOrElse("filtered")
+//        val dotIndex = fileName.lastIndexOf(".")
+//        dotIndex != -1 && fileName.substring(dotIndex).equals(".java")
+//      }).map(y => y.changes).sum)) // (Commit SHA, .java changes) for every commit
+//
+//    geos
+//      .join(SHAChanges)
+//      .where(x => x.sha)
+//      .equalTo(x => x._1)
+//      .window(TumblingEventTimeWindows.of(Time.days(7)))
+//      .apply((x,y) => (x.continent,y._2))
+//      .keyBy(x => x._1)
+//      .sum(1)
   }
 
   /**
