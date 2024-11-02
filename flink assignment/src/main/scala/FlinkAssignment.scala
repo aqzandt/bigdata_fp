@@ -5,8 +5,14 @@ import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
 import org.apache.flink.api.scala._
 import org.apache.flink.configuration.Configuration
+import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks
+import org.apache.flink.streaming.api.functions.co.ProcessJoinFunction
+import org.apache.flink.streaming.api.scala.function.ProcessWindowFunction
+import org.apache.flink.streaming.api.watermark.Watermark
 import org.apache.flink.streaming.api.windowing.assigners.{SlidingEventTimeWindows, TumblingEventTimeWindows}
 import org.apache.flink.streaming.api.windowing.time.Time
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow
+import org.apache.flink.util.Collector
 import util.Protocol.{Commit, CommitGeo, CommitSummary, File}
 import util.{CommitGeoParser, CommitParser}
 
@@ -42,7 +48,7 @@ object FlinkAssignment {
         .map(new CommitGeoParser)
 
     /** Use the space below to print and test your questions. */
-    question_six(commitStream).print()
+    question_eight(commitStream, commitGeoStream).print()
 
     /** Start the streaming environment. **/
     env.execute()
@@ -122,12 +128,14 @@ object FlinkAssignment {
     input//.map(x => (x.commit.committer.date, 1))
       .assignAscendingTimestamps(_.commit.committer.date.getTime)
       .map(x => (formatter.format(x.commit.committer.date), 1))
-//      .keyBy(_._1)
-//      .timeWindow(Time.days(1))
+      //      .keyBy(_._1)
+      //      .timeWindow(Time.days(1))
       .windowAll(TumblingEventTimeWindows.of(Time.days(1)))
       .reduce { (v1, v2) => (v1._1, v1._2 + v2._2) }
       .map(x => (x._1.toString, x._2))
   }
+
+
 
   /**
     * Consider two types of commits; small commits and large commits whereas small: 0 <= x <= 20 and large: x > 20 where x = total amount of changes.
@@ -135,16 +143,25 @@ object FlinkAssignment {
     * Output format: (type, count)
     */
   def question_six(input: DataStream[Commit]): DataStream[(String, Int)] = {
-    def getTotalChanges(files: List[File]): Long = {
+    def getTotalChanges(files: List[File]): Int = {
       files.map(_.changes).sum
     }
 
+//    class assignWatermark extends AssignerWithPunctuatedWatermarks[Commit]  {
+//      def checkAndGetNextWatermark(commit: Commit, l: Long): Watermark = null
+//      def extractTimestamp(commit: Commit, l: Long): Long = commit.commit.committer.date.getTime
+//    }
+
     input
       .assignAscendingTimestamps(_.commit.committer.date.getTime)
-      .map{x =>
-        if(getTotalChanges(x.files) <= 20) ("small", 1)
-        else ("large", 1)
+      .map(x =>
+      {
+        val changes = getTotalChanges(x.files)
+        if (changes >= 0 && changes <= 20) ("small", 1)
+        else if (changes > 20) ("large", 1)
+        else ("small", 0)
       }
+      )
       .keyBy(_._1)
       .window(SlidingEventTimeWindows.of(Time.hours(48), Time.hours(12)))
       .reduce {(v1, v2) => (v1._1, v1._2 + v2._2)}
@@ -166,7 +183,38 @@ object FlinkAssignment {
     * Output format: CommitSummary
     */
   def question_seven(
-      commitStream: DataStream[Commit]): DataStream[CommitSummary] = ???
+      commitStream: DataStream[Commit]): DataStream[CommitSummary] = {
+
+    def getFullRepo(url: String): String = {
+      url.substring(29,url.indexOf('/', url.indexOf('/', 29)+1))
+    }
+    def getTotalChanges(files: List[File]): Int = {
+      files.map(_.changes).sum
+    }
+
+    class processCommitSummary extends ProcessWindowFunction[(String, String, Int), CommitSummary, String, TimeWindow] {
+
+      def process(key: String, context: Context, elements: Iterable[(String, String, Int)], out: Collector[CommitSummary])  = {
+        val formatter = new SimpleDateFormat("dd-MM-yyyy")
+        val date = formatter.format(context.window.getStart)
+        val amountOfCommits = elements.size
+        val amountOfCommitters = elements.map(x => x._2).toList.distinct.size
+        val totalChanges = elements.map(x => x._3).sum
+        val commitCountsPerCommitter = elements.map(x => (x._2, x._3)).groupBy(x => x._1).map(x => (x._1,x._2.reduce((j,k) => (j._1,j._2 + k._2)))).map(x => (x._1, x._2._2))
+        val maxCommits = commitCountsPerCommitter.values.max
+        val topCommitter = commitCountsPerCommitter.filter(_._2 == maxCommits).keys.toList.sorted.mkString(",")
+        out.collect(CommitSummary(key, date, amountOfCommits, amountOfCommitters, totalChanges, topCommitter))
+      }
+    }
+
+    commitStream
+      .assignAscendingTimestamps(_.commit.committer.date.getTime)
+      .map(x => (getFullRepo(x.url),x.commit.committer.name,getTotalChanges(x.files)))
+      .keyBy(_._1)
+      .timeWindow(Time.hours(24))
+      .process(new processCommitSummary())
+      .filter(x => x.amountOfCommits > 20 && x.amountOfCommitters <= 2)
+  }
 
   /**
     * For this exercise there is another dataset containing CommitGeo events. A CommitGeo event stores the sha of a commit, a date and the continent it was produced in.
@@ -178,7 +226,35 @@ object FlinkAssignment {
     */
   def question_eight(
       commitStream: DataStream[Commit],
-      geoStream: DataStream[CommitGeo]): DataStream[(String, Int)] = ???
+      geoStream: DataStream[CommitGeo]): DataStream[(String, Int)] = {
+
+    val geos = geoStream.assignAscendingTimestamps(_.createdAt.getTime)
+    .keyBy(_.sha)
+
+    val SHAChanges = commitStream
+      .assignAscendingTimestamps(_.commit.committer.date.getTime)
+      .map(x => (x.sha, x.files.filter(y => {
+        val fileName = y.filename.getOrElse("filtered")
+        val dotIndex = fileName.lastIndexOf(".")
+        dotIndex != -1 && fileName.substring(dotIndex).equals(".java")
+        }).map(y => y.changes).sum, x.commit.committer.date.getTime)) // (Commit SHA, .java changes) for every commit
+      .keyBy(_._1)
+
+    geos
+      .intervalJoin(SHAChanges)
+      .between(Time.minutes(-60), Time.minutes(30))
+      .process(new ProcessJoinFunction[CommitGeo, (String, Int, Long), (String, Int, Long)] {
+        override def processElement(left: CommitGeo, right: (String, Int, Long), ctx: ProcessJoinFunction[CommitGeo,(String, Int, Long), (String, Int, Long)]#Context, out: Collector[(String, Int, Long)]): Unit = {
+          out.collect((left.continent,right._2,right._3))
+        }
+      })
+      .assignAscendingTimestamps(_._3)
+      .map(x => (x._1, x._2))
+      .keyBy(_._1)
+      .timeWindow(Time.days(7))
+      .reduce((x,y) => (x._1,x._2 + y._2))
+
+  }
 
   /**
     * Find all files that were added and removed within one day. Output as (repository, filename).
