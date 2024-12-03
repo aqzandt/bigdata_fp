@@ -73,7 +73,11 @@ hs_err_pid*
 # End of https://www.toptal.com/developers/gitignore/api/scala,intellij+iml,maven
 
 *.Identifier
-spark\ assignment/data/data_raw.json
-spark\ assignment/.idea/*
-flink\ assignment/data/flink_commits.json
 *.csv
+.idea/*
+fp\ assignment/.idea/*
+flink\ assignment/.idea/*
+spark\ assignment/.idea/*
+
+flink\ assignment/data/*
+spark\ assignment/data/*
